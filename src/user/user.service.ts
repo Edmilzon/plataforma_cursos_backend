@@ -1,16 +1,18 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserEntity } from "./entity/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserDto } from "./dto/user.dto";
 import { Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
+import { JwtService } from "@nestjs/jwt";
 
 
 @Injectable()
 export class UserService{
     constructor(
         @InjectRepository(UserEntity)
-        private readonly userRepository: Repository<UserEntity>
+        private readonly userRepository: Repository<UserEntity>,
+        private readonly jwtService: JwtService,
     ){}
 
     //REGISTER USER
@@ -38,5 +40,20 @@ export class UserService{
         })
 
         return validate;
+    }
+
+    //LOGIN USER 
+    async loginUser(data:UserDto){
+        const user = await this.userRepository.findOne({where: {email: data.email}});
+        const validatePassword = await bcrypt.compare(data.password, user?.password);
+        if(!user || !validatePassword) throw new UnauthorizedException("credenciales incorrectos");
+
+        const payload  = {sub: user.id, email: user.email};
+        const token = this.jwtService.sign(payload);
+
+        return {
+            token, 
+            user
+        }
     }
 }
