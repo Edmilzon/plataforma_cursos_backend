@@ -1,6 +1,5 @@
-import { Body, Post } from "@nestjs/common";
+import { Body, Controller, Post } from "@nestjs/common";
 import { UserService } from "./user.service";
-import { register } from "module";
 import { UserDto } from "./dto/user.dto";
 
 export class UserController {

@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserEntity } from "./entity/user.entity";
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectDataSource } from "@nestjs/typeorm";
 import { UserDto } from "./dto/user.dto";
-import { Repository } from "typeorm";
+import { DataSource } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { JwtService } from "@nestjs/jwt";
 
@@ -10,42 +10,52 @@ import { JwtService } from "@nestjs/jwt";
 @Injectable()
 export class UserService{
     constructor(
-        @InjectRepository(UserEntity)
-        private readonly userRepository: Repository<UserEntity>,
+        @InjectDataSource()
+        private readonly dataSource: DataSource,
         private readonly jwtService: JwtService,
     ){}
 
     //REGISTER USER
     async registerUser (date: UserDto): Promise<UserEntity>{
         const validate = await this.validarEP(date.email, date.phone);
-        if(validate) throw new BadRequestException ("El email o el telefono ya existen");
+        if(validate) throw new BadRequestException("El email o el teléfono ya existen");
 
-        const newUser = new UserEntity();
-            newUser.name = date.name;
-            newUser.lastname = date.lastname;
-            newUser.email = date.email;
-            newUser.password = await bcrypt.hash(date.password, 10)
-            newUser.phone = date.phone;
-            newUser.rol = date.rol;
+        const hashedPassword = await bcrypt.hash(date.password, 10);
 
-            return await this.userRepository.save(newUser);
+        const query = `
+            INSERT INTO "user" (name, lastname, email, password, phone, rol)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
+        `;
+
+        const result = await this.dataSource.query(query, [
+            date.name,
+            date.lastname,
+            date.email,
+            hashedPassword,
+            date.phone,
+            date.rol
+        ]);
+
+        return result[0];
     }
 
-    async validarEP (mail: string, phon: string): Promise<Boolean> {
-        const validate = await this.userRepository.exists({
-            where:[
-                {email: mail},
-                {phone: phon}
-            ]
-        })
+    async validarEP (mail: string, phon: string): Promise<boolean> {
+        const query = `SELECT 1 FROM "user" WHERE email = $1 OR phone = $2 LIMIT 1;`;
+        const result = await this.dataSource.query(query, [mail, phon]);
 
-        return validate;
+        return result.length > 0;
     }
 
     //LOGIN USER 
     async loginUser(data:UserDto){
-        const user = await this.userRepository.findOne({where: {email: data.email}});
-        const validatePassword = await bcrypt.compare(data.password, user?.password);
+        const query = `SELECT * FROM "user" WHERE email = $1;`;
+        const result = await this.dataSource.query(query, [data.email]);
+
+        const user: UserEntity = result[0];
+
+        const validatePassword = user ? await bcrypt.compare(data.password, user.password) : false;
+
         if(!user || !validatePassword) throw new UnauthorizedException("credenciales incorrectos");
 
         const payload  = {sub: user.id, email: user.email};
