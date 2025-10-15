@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
-      type: 'postgres',
+      type: 'mysql',
       url: process.env.DB_URL,
       autoLoadEntities: true,
       synchronize: true
