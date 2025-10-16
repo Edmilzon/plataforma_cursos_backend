@@ -1,15 +1,17 @@
 export class UserEntity{
-    id: number;
+    id_usuario: number;
 
-    name: string;
+    nombre: string;
 
-    lastname: string;
+    apellido: string;
 
-    email: string;
+    correo: string;
 
     password: string;
 
-    phone: string;
+    fecha_registro: Date;
 
-    rol: string;
+    avatar_url: string;
+
+    saldo_punto: number;
 }

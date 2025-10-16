@@ -1,33 +1,37 @@
-import { Body, Controller, Post } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { UserDto } from "./dto/user.dto";
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { UserService } from './user.service';
+import { UserRole } from './dto/user.dto';
 
+@Controller('user')
 export class UserController {
-    constructor(
-        private readonly userService: UserService
-    ){}
+  constructor(private readonly userService: UserService) {}
 
-    @Post('register')
-    async registerUser(@Body() date: UserDto){
-        const newUser = await this.userService.registerUser(date);
+  /**
+   * @description Obtiene todos los usuarios
+   * @returns {Promise<Omit<User, 'password'>[]>}
+   */
+  @Get()
+  findAll() {
+    return this.userService.findAll();
+  }
 
-        return {
-            message: "usuario registrado correctamente",
-            status: 201
-        }
-    }
+  /**
+   * @description Obtiene usuarios por rol.
+   * @param {UserRole} rol - El rol para filtrar los usuarios.
+   * @returns {Promise<Omit<User, 'password'>[]>}
+   */
+  @Get('rol')
+  findByRole(@Query('rol') rol: UserRole) {
+    return this.userService.findByRole(rol);
+  }
 
-    @Post('login')
-    async loginUser(@Body() date: UserDto) {
-        const login = await this.userService.loginUser(date);
-        const { password, ...userNotPassword } = login.user;
-
-        return {
-            message: "Login exitoso",
-            status: 200,
-            token: login.token,
-            user: userNotPassword
-        }
-    }
-    
+  /**
+   * @description Obtiene un usuario por su ID.
+   * @param {number} id - El ID del usuario.
+   * @returns {Promise<Omit<User, 'password'>>}
+   */
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findOne(id);
+  }
 }
