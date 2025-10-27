@@ -23,19 +23,19 @@ export class UserService{
             throw new BadRequestException("El email ya existe");
         }
 
-        const hashedPassword = await bcrypt.hash(userDto.password, 10);
+        // const hashedPassword = await bcrypt.hash(userDto.password, 10); // Hasheo deshabilitado temporalmente
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-            const camposAInsertar = ['nombre', 'apellido', 'correo', 'password'];
-            const valores = [
+            const camposAInsertar = ['nombre', 'apellido', 'correo', 'password']; // Se mantiene el campo password
+            const valores: (string | number)[] = [
                 userDto.nombre,
                 userDto.apellido,
                 userDto.correo,
-                hashedPassword,
+                userDto.password, // Se inserta la contraseña directamente
             ];
 
             if (userDto.edad) {
@@ -103,7 +103,10 @@ export class UserService{
         
         const user: User = result[0];
         
-        const isPasswordValid = await bcrypt.compare(loginDto.password, user.password!);
+        // Cuando reactives el hasheo en el registro, debes volver a usar bcrypt.compare
+        // const isPasswordValid = await bcrypt.compare(loginDto.password, user.password!);
+        
+        const isPasswordValid = (loginDto.password === user.password); // Comparación directa para texto plano
         
         if (!isPasswordValid) {
             throw new UnauthorizedException("Credenciales incorrectas");

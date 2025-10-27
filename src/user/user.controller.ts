@@ -1,10 +1,27 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserRole } from './dto/user.dto';
+import { UserDto, UserRole} from './dto/user.dto';
+import{LoginUserDto} from './dto/login-user.dto';
+import { User } from './interfaces/user.interface';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  register(@Body() userDto: UserDto): Promise<Omit<User, 'password'>> {
+    return this.userService.registerUser(userDto);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  login(@Body() loginDto: LoginUserDto): Promise<{
+    token: string;
+    user: Omit<User, 'password'>;
+  }> {
+    return this.userService.loginUser(loginDto);
+  }
 
   /**
    * @description Obtiene todos los usuarios
