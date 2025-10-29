@@ -102,10 +102,169 @@ GET http://localhost:5000/ranking/students
 
 Descripción: Devuelve el ranking de los mejores estudiantes basado en sus puntos.
 
+[
+  {
+    "id_usuario": 5,
+    "nombre": "Carlos",
+    "apellido": "Gomez",
+    "avatar_url": "/img/avatar/est3.png",
+    "saldo_punto": 300,
+    "rank": "1"
+  },
+  {
+    "id_usuario": 10,
+    "nombre": "Luis",
+    "apellido": "Mendoza",
+    "avatar_url": "avatar5.png",
+    "saldo_punto": 300,
+    "rank": "1"
+  },
+  {
+    "id_usuario": 3,
+    "nombre": "Juan",
+    "apellido": "Lopez",
+    "avatar_url": "/img/avatar/est1.png",
+    "saldo_punto": 240,
+    "rank": "3"
+  },
+  {
+    "id_usuario": 6,
+    "nombre": "Carlos",
+    "apellido": "López",
+    "avatar_url": "avatar1.png",
+    "saldo_punto": 200,
+    "rank": "4"
+  },
+  {
+    "id_usuario": 7,
+    "nombre": "María",
+    "apellido": "Gonzales",
+    "avatar_url": "avatar2.png",
+    "saldo_punto": 150,
+    "rank": "5"
+  },
+  {
+    "id_usuario": 4,
+    "nombre": "Maria",
+    "apellido": "Perez",
+    "avatar_url": "/img/avatar/est2.png",
+    "saldo_punto": 130,
+    "rank": "6"
+  },
+  {
+    "id_usuario": 11,
+    "nombre": "Sofía",
+    "apellido": "Pérez",
+    "avatar_url": "avatar6.png",
+    "saldo_punto": 120,
+    "rank": "7"
+  },
+  {
+    "id_usuario": 8,
+    "nombre": "Juan",
+    "apellido": "Rojas",
+    "avatar_url": "avatar3.png",
+    "saldo_punto": 100,
+    "rank": "8"
+  },
+  {
+    "id_usuario": 12,
+    "nombre": "Daniel",
+    "apellido": "Castro",
+    "avatar_url": "avatar7.png",
+    "saldo_punto": 90,
+    "rank": "9"
+  },
+  {
+    "id_usuario": 13,
+    "nombre": "Lucía",
+    "apellido": "Quispe",
+    "avatar_url": "avatar8.png",
+    "saldo_punto": 60,
+    "rank": "10"
+  }
+]
+
 GET http://localhost:5000/ranking/courses/rating
 
 Descripción: Devuelve el ranking de los cursos con mejor calificación promedio.
 
+[
+  {
+    "id_curso": 2,
+    "titulo": "Introducción a Python",
+    "descripcion": "Aprende los fundamentos de Python",
+    "calificacion_promedio": "5.00000",
+    "rank": "1"
+  },
+  {
+    "id_curso": 5,
+    "titulo": "JavaScript Avanzado",
+    "descripcion": "Domina JS moderno y frameworks",
+    "calificacion_promedio": "4.70000",
+    "rank": "2"
+  },
+  {
+    "id_curso": 1,
+    "titulo": "Introducción a Python",
+    "descripcion": "Aprende los fundamentos de Python desde cero.",
+    "calificacion_promedio": "4.50000",
+    "rank": "3"
+  },
+  {
+    "id_curso": 3,
+    "titulo": "Diseño UX/UI desde cero",
+    "descripcion": "Curso práctico de diseño de interfaces",
+    "calificacion_promedio": "4.00000",
+    "rank": "4"
+  },
+  {
+    "id_curso": 4,
+    "titulo": "Emprendimiento Digital",
+    "descripcion": "Crea tu negocio en línea",
+    "calificacion_promedio": "3.80000",
+    "rank": "5"
+  }
+]
+
 GET http://localhost:5000/ranking/courses/popularity
 
 Descripción: Devuelve el ranking de los cursos más populares (con más estudiantes inscritos).
+
+[
+  {
+    "id_curso": 1,
+    "titulo": "Introducción a Python",
+    "descripcion": "Aprende los fundamentos de Python desde cero.",
+    "cantidad_estudiantes": "1",
+    "rank": "1"
+  },
+  {
+    "id_curso": 2,
+    "titulo": "Introducción a Python",
+    "descripcion": "Aprende los fundamentos de Python",
+    "cantidad_estudiantes": "1",
+    "rank": "1"
+  },
+  {
+    "id_curso": 3,
+    "titulo": "Diseño UX/UI desde cero",
+    "descripcion": "Curso práctico de diseño de interfaces",
+    "cantidad_estudiantes": "1",
+    "rank": "1"
+  },
+  {
+    "id_curso": 4,
+    "titulo": "Emprendimiento Digital",
+    "descripcion": "Crea tu negocio en línea",
+    "cantidad_estudiantes": "1",
+    "rank": "1"
+  },
+  {
+    "id_curso": 5,
+    "titulo": "JavaScript Avanzado",
+    "descripcion": "Domina JS moderno y frameworks",
+    "cantidad_estudiantes": "1",
+    "rank": "1"
+  }
+]
