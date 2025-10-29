@@ -96,3 +96,16 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+GET http://localhost:5000/ranking/students
+
+Descripción: Devuelve el ranking de los mejores estudiantes basado en sus puntos.
+
+GET http://localhost:5000/ranking/courses/rating
+
+Descripción: Devuelve el ranking de los cursos con mejor calificación promedio.
+
+GET http://localhost:5000/ranking/courses/popularity
+
+Descripción: Devuelve el ranking de los cursos más populares (con más estudiantes inscritos).
