@@ -4,11 +4,13 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
+import { RankingModule } from './ranking/ranking.module';
 import { CursosModule } from './cursos/cursos.module';
 
 @Module({
   imports: [
     CursosModule,
+    RankingModule,
     UserModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
