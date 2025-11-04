@@ -6,6 +6,7 @@ import {
   IsNumber,
   Min,
   Matches,
+  IsUrl,
 } from 'class-validator';
 
 export class CreateCursoDto {
@@ -42,6 +43,15 @@ export class CreateCursoDto {
   @IsNumber()
   @IsNotEmpty()
   id_tipo_curso: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  cupo?: number;
+
+  @IsOptional()
+  @IsUrl()
+  imagen_portada_url?: string;
 }
 
 export class UpdateCursoDto {
@@ -55,6 +65,8 @@ export class UpdateCursoDto {
   @IsOptional() @IsString() @IsNotEmpty() modalidad?: string;
   @IsOptional() @IsNumber() id_docente?: number;
   @IsOptional() @IsNumber() id_tipo_curso?: number;
+  @IsOptional() @IsNumber() @Min(0) cupo?: number;
+  @IsOptional() @IsUrl() imagen_portada_url?: string;
 }
 
 // DTOs para Modulo

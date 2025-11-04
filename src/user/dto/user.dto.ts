@@ -1,9 +1,9 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, MinLength } from "class-validator";
 
 export enum UserRole {
-    ADMINISTRADOR = 'Administrador',
-    DOCENTE = 'Docente',
-    ESTUDIANTE = 'Estudiante',
+    Administrador = 'Administrador',
+    Docente = 'Docente',
+    Estudiante = 'Estudiante',
 }
 
 export class UserDto {

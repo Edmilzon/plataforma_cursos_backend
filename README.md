@@ -1,336 +1,431 @@
+# API del Módulo de Usuarios
 
-GET http://localhost:5000/ranking/students
+Esta es la documentación para la API REST del módulo de usuarios.
 
-Descripción: Devuelve el ranking de los mejores estudiantes basado en sus puntos.
-
-[
-  {
-    "id_usuario": 5,
-    "nombre": "Carlos",
-    "apellido": "Gomez",
-    "avatar_url": "/img/avatar/est3.png",
-    "saldo_punto": 300,
-    "rank": "1"
-  },
-  {
-    "id_usuario": 10,
-    "nombre": "Luis",
-    "apellido": "Mendoza",
-    "avatar_url": "avatar5.png",
-    "saldo_punto": 300,
-    "rank": "1"
-  },
-  {
-    "id_usuario": 3,
-    "nombre": "Juan",
-    "apellido": "Lopez",
-    "avatar_url": "/img/avatar/est1.png",
-    "saldo_punto": 240,
-    "rank": "3"
-  },
-  {
-    "id_usuario": 6,
-    "nombre": "Carlos",
-    "apellido": "López",
-    "avatar_url": "avatar1.png",
-    "saldo_punto": 200,
-    "rank": "4"
-  },
-  {
-    "id_usuario": 7,
-    "nombre": "María",
-    "apellido": "Gonzales",
-    "avatar_url": "avatar2.png",
-    "saldo_punto": 150,
-    "rank": "5"
-  },
-  {
-    "id_usuario": 4,
-    "nombre": "Maria",
-    "apellido": "Perez",
-    "avatar_url": "/img/avatar/est2.png",
-    "saldo_punto": 130,
-    "rank": "6"
-  },
-  {
-    "id_usuario": 11,
-    "nombre": "Sofía",
-    "apellido": "Pérez",
-    "avatar_url": "avatar6.png",
-    "saldo_punto": 120,
-    "rank": "7"
-  },
-  {
-    "id_usuario": 8,
-    "nombre": "Juan",
-    "apellido": "Rojas",
-    "avatar_url": "avatar3.png",
-    "saldo_punto": 100,
-    "rank": "8"
-  },
-  {
-    "id_usuario": 12,
-    "nombre": "Daniel",
-    "apellido": "Castro",
-    "avatar_url": "avatar7.png",
-    "saldo_punto": 90,
-    "rank": "9"
-  },
-  {
-    "id_usuario": 13,
-    "nombre": "Lucía",
-    "apellido": "Quispe",
-    "avatar_url": "avatar8.png",
-    "saldo_punto": 60,
-    "rank": "10"
-  }
-]
-
-GET http://localhost:5000/ranking/courses/rating
-
-Descripción: Devuelve el ranking de los cursos con mejor calificación promedio.
-
-[
-  {
-    "id_curso": 2,
-    "titulo": "Introducción a Python",
-    "descripcion": "Aprende los fundamentos de Python",
-    "calificacion_promedio": "5.00000",
-    "rank": "1"
-  },
-  {
-    "id_curso": 5,
-    "titulo": "JavaScript Avanzado",
-    "descripcion": "Domina JS moderno y frameworks",
-    "calificacion_promedio": "4.70000",
-    "rank": "2"
-  },
-  {
-    "id_curso": 1,
-    "titulo": "Introducción a Python",
-    "descripcion": "Aprende los fundamentos de Python desde cero.",
-    "calificacion_promedio": "4.50000",
-    "rank": "3"
-  },
-  {
-    "id_curso": 3,
-    "titulo": "Diseño UX/UI desde cero",
-    "descripcion": "Curso práctico de diseño de interfaces",
-    "calificacion_promedio": "4.00000",
-    "rank": "4"
-  },
-  {
-    "id_curso": 4,
-    "titulo": "Emprendimiento Digital",
-    "descripcion": "Crea tu negocio en línea",
-    "calificacion_promedio": "3.80000",
-    "rank": "5"
-  }
-]
-
-GET http://localhost:5000/ranking/courses/popularity
-
-Descripción: Devuelve el ranking de los cursos más populares (con más estudiantes inscritos).
-
-[
-  {
-    "id_curso": 1,
-    "titulo": "Introducción a Python",
-    "descripcion": "Aprende los fundamentos de Python desde cero.",
-    "cantidad_estudiantes": "1",
-    "rank": "1"
-  },
-  {
-    "id_curso": 2,
-    "titulo": "Introducción a Python",
-    "descripcion": "Aprende los fundamentos de Python",
-    "cantidad_estudiantes": "1",
-    "rank": "1"
-  },
-  {
-    "id_curso": 3,
-    "titulo": "Diseño UX/UI desde cero",
-    "descripcion": "Curso práctico de diseño de interfaces",
-    "cantidad_estudiantes": "1",
-    "rank": "1"
-  },
-  {
-    "id_curso": 4,
-    "titulo": "Emprendimiento Digital",
-    "descripcion": "Crea tu negocio en línea",
-    "cantidad_estudiantes": "1",
-    "rank": "1"
-  },
-  {
-    "id_curso": 5,
-    "titulo": "JavaScript Avanzado",
-    "descripcion": "Domina JS moderno y frameworks",
-    "cantidad_estudiantes": "1",
-    "rank": "1"
-  }
-]
+## Endpoints
 
 ---
 
-## Módulo de Cursos
+### 1. Registrar un nuevo usuario
 
-### `GET http://localhost:5000/cursos`
+- **URL:** `/user/register`
+- **Método:** `POST`
+- **Descripción:** Crea un nuevo usuario en el sistema. El rol por defecto es 'Estudiante' si no se especifica.
 
-**Descripción:** Devuelve una lista de todos los cursos disponibles.
+#### Formato de la Petición (Request Body)
 
-**Respuesta de ejemplo:**
+```json
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "correo": "juan.perez@example.com",
+  "password": "password123",
+  "edad": 25,
+  "avatar_url": "http://example.com/avatar.jpg",
+  "rol": "Estudiante"
+}
+```
+
+**Campos:**
+- `nombre` (string, requerido): Nombre del usuario.
+- `apellido` (string, requerido): Apellido del usuario.
+- `correo` (string, email, requerido): Correo electrónico único.
+- `password` (string, requerido, min 6 caracteres): Contraseña del usuario.
+- `edad` (number, opcional): Edad del usuario.
+- `avatar_url` (string, url, opcional): URL de la imagen de perfil.
+- `rol` (enum, opcional): Rol del usuario. Valores posibles: `Administrador`, `Docente`, `Estudiante`. Por defecto: `Estudiante`.
+
+#### Formato de la Respuesta (Response Body) - `201 Created`
+
+```json
+{
+  "id_usuario": 1,
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "edad": 25,
+  "correo": "juan.perez@example.com",
+  "fecha_registro": "2023-10-27T10:00:00.000Z",
+  "avatar_url": "http://example.com/avatar.jpg",
+  "saldo_punto": 0,
+  "rol": "Estudiante"
+}
+```
+
+---
+
+### 2. Iniciar sesión
+
+- **URL:** `/user/login`
+- **Método:** `POST`
+- **Descripción:** Autentica a un usuario y devuelve un token JWT junto con los datos del usuario.
+
+#### Formato de la Petición (Request Body)
+
+```json
+{
+  "correo": "juan.perez@example.com",
+  "password": "password123"
+}
+```
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id_usuario": 1,
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "edad": 25,
+    "correo": "juan.perez@example.com",
+    "fecha_registro": "2023-10-27T10:00:00.000Z",
+    "avatar_url": "http://example.com/avatar.jpg",
+    "saldo_punto": 0,
+    "rol": "Estudiante"
+  }
+}
+```
+
+---
+
+### 3. Obtener todos los usuarios
+
+- **URL:** `/user`
+- **Método:** `GET`
+- **Descripción:** Devuelve una lista de todos los usuarios registrados.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
 ```json
 [
   {
+    "id_usuario": 1,
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "edad": 25,
+    "correo": "juan.perez@example.com",
+    "fecha_registro": "2023-10-27T10:00:00.000Z",
+    "avatar_url": "http://example.com/avatar.jpg",
+    "saldo_punto": 0,
+    "rol": "Estudiante"
+  },
+  {
+    "id_usuario": 2,
+    "nombre": "Ana",
+    "apellido": "Gomez",
+    "edad": 35,
+    "correo": "ana.gomez@example.com",
+    "fecha_registro": "2023-10-26T12:00:00.000Z",
+    "avatar_url": null,
+    "saldo_punto": 100,
+    "rol": "Docente"
+  }
+]
+```
+
+---
+
+### 4. Obtener usuarios por rol
+
+- **URL:** `/user/rol?rol=<nombre_del_rol>`
+- **Método:** `GET`
+- **Descripción:** Devuelve una lista de usuarios que coinciden con el rol especificado.
+- **Parámetros de Consulta (Query Params):**
+  - `rol` (string, requerido): Rol a filtrar. Ej: `Estudiante`, `Docente`, `Administrador`.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+La respuesta es un array de usuarios, similar al de "Obtener todos los usuarios", pero filtrado por el rol.
+
+---
+
+### 5. Obtener un usuario por ID
+
+- **URL:** `/user/:id`
+- **Método:** `GET`
+- **Descripción:** Devuelve un usuario específico por su ID.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+La respuesta es un objeto de usuario, similar al de la respuesta de registro.
+
+---
+
+# API del Módulo de Rankings
+
+Esta sección documenta los endpoints para obtener diferentes clasificaciones dentro de la plataforma.
+
+---
+
+### 1. Ranking de mejores estudiantes
+
+- **URL:** `/ranking/students`
+- **Método:** `GET`
+- **Descripción:** Obtiene el ranking de los mejores estudiantes basado en su `saldo_punto`.
+- **Parámetros de Consulta (Query Params):**
+  - `limit` (number, opcional): Define el número de estudiantes a devolver. Por defecto es `10`.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+```json
+[
+  {
+    "id_usuario": 15,
+    "nombre": "Carlos",
+    "apellido": "Ruiz",
+    "avatar_url": "http://example.com/avatar/carlos.jpg",
+    "saldo_punto": 1500,
+    "rank": 1
+  },
+  {
+    "id_usuario": 8,
+    "nombre": "Lucia",
+    "apellido": "Fernandez",
+    "avatar_url": "http://example.com/avatar/lucia.jpg",
+    "saldo_punto": 1450,
+    "rank": 2
+  }
+]
+```
+
+---
+
+### 2. Ranking de cursos por valoración
+
+- **URL:** `/ranking/courses/rating`
+- **Método:** `GET`
+- **Descripción:** Obtiene el ranking de los cursos mejor valorados según la calificación promedio de los usuarios.
+- **Parámetros de Consulta (Query Params):**
+  - `limit` (number, opcional): Define el número de cursos a devolver. Por defecto es `10`.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+```json
+[
+  {
+    "id_curso": 5,
+    "titulo": "Introducción a Machine Learning",
+    "descripcion": "Aprende los fundamentos del Machine Learning.",
+    "calificacion_promedio": 4.9,
+    "rank": 1
+  },
+  {
+    "id_curso": 2,
+    "titulo": "Desarrollo Web con React",
+    "descripcion": "Crea aplicaciones web modernas.",
+    "calificacion_promedio": 4.8,
+    "rank": 2
+  }
+]
+```
+
+---
+
+### 3. Ranking de cursos por popularidad
+
+- **URL:** `/ranking/courses/popularity`
+- **Método:** `GET`
+- **Descripción:** Obtiene el ranking de los cursos más populares, basado en el número de estudiantes inscritos.
+- **Parámetros de Consulta (Query Params):**
+  - `limit` (number, opcional): Define el número de cursos a devolver. Por defecto es `10`.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+La respuesta es un array de objetos con la siguiente estructura:
+
+```json
+[
+  {
+    "id_curso": 2,
+    "titulo": "Desarrollo Web con React",
+    "descripcion": "Crea aplicaciones web modernas.",
+    "cantidad_estudiantes": 150,
+    "rank": 1
+  },
+  {
     "id_curso": 1,
-    "titulo": "Introducción a Python",
-    "descripcion": "Aprende los fundamentos de Python desde cero.",
-    "fecha_inicio": "2024-01-15",
-    "fecha_fin": "2024-03-15",
-    "duracion": 60,
-    "precio": "50.00",
+    "titulo": "Bases de Datos desde Cero",
+    "descripcion": "Todo sobre SQL y NoSQL.",
+    "cantidad_estudiantes": 125,
+    "rank": 2
+  }
+]
+```
+
+---
+
+# API del Módulo de Cursos
+
+Esta sección documenta los endpoints para la gestión de cursos, módulos y horarios.
+
+## Endpoints de Cursos
+
+---
+
+### 1. Crear un nuevo curso
+
+- **URL:** `/cursos`
+- **Método:** `POST`
+- **Descripción:** Crea un nuevo curso en la plataforma.
+
+#### Formato de la Petición (Request Body)
+
+```json
+{
+  "titulo": "Curso de NestJS desde Cero",
+  "descripcion": "Aprende a construir APIs robustas con NestJS.",
+  "fecha_inicio": "2024-08-01",
+  "fecha_fin": "2024-09-01",
+  "duracion": 40,
+  "precio": 99.99,
+  "modalidad": "Online",
+  "id_docente": 2,
+  "id_tipo_curso": 1,
+  "cupo": 50,
+  "imagen_portada_url": "http://example.com/curso-nestjs.png"
+}
+```
+
+#### Formato de la Respuesta (Response Body) - `201 Created`
+
+Devuelve el objeto del curso recién creado, incluyendo la información del docente y el tipo de curso.
+
+```json
+{
+  "id_curso": 10,
+  "titulo": "Curso de NestJS desde Cero",
+  "descripcion": "Aprende a construir APIs robustas con NestJS.",
+  "fecha_inicio": "2024-08-01",
+  "fecha_fin": "2024-09-01",
+  "duracion": 40,
+  "precio": "99.99",
+  "modalidad": "Online",
+  "cupo": 50,
+  "imagen_portada_url": "http://example.com/curso-nestjs.png",
+  "docente": {
+    "id_usuario": 2,
+    "nombre": "Ana",
+    "apellido": "Gomez"
+  },
+  "tipo_curso": {
+    "id_tipo_curso": 1,
+    "nombre": "Desarrollo Web"
+  }
+}
+```
+
+---
+
+### 2. Obtener todos los cursos
+
+- **URL:** `/cursos`
+- **Método:** `GET`
+- **Descripción:** Devuelve una lista de todos los cursos disponibles.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+```json
+[
+  {
+    "id_curso": 10,
+    "titulo": "Curso de NestJS desde Cero",
+    "descripcion": "Aprende a construir APIs robustas con NestJS.",
+    "fecha_inicio": "2024-08-01",
+    "fecha_fin": "2024-09-01",
+    "duracion": 40,
+    "precio": "99.99",
     "modalidad": "Online",
     "docente": {
       "id_usuario": 2,
       "nombre": "Ana",
-      "apellido": "García"
+      "apellido": "Gomez"
     },
     "tipo_curso": {
       "id_tipo_curso": 1,
-      "nombre": "Programación"
+      "nombre": "Desarrollo Web"
     }
   }
 ]
 ```
 
-### `GET http://localhost:5000/cursos/:id`
+---
 
-**Descripción:** Devuelve un curso específico por su ID.
+### 3. Obtener un curso por ID
 
-**Respuesta de ejemplo:**
-```json
-{
-  "id_curso": 1,
-  "titulo": "Introducción a Python",
-  "descripcion": "Aprende los fundamentos de Python desde cero.",
-  "fecha_inicio": "2024-01-15",
-  "fecha_fin": "2024-03-15",
-  "duracion": 60,
-  "precio": "50.00",
-  "modalidad": "Online",
-  "docente": {
-    "id_usuario": 2,
-    "nombre": "Ana",
-    "apellido": "García"
-  },
-  "tipo_curso": {
-    "id_tipo_curso": 1,
-    "nombre": "Programación"
-  }
-}
-```
+- **URL:** `/cursos/:id`
+- **Método:** `GET`
+- **Descripción:** Devuelve un curso específico por su ID.
 
-### `POST http://localhost:5000/cursos`
+#### Formato de la Respuesta (Response Body) - `200 OK`
 
-**Descripción:** Crea un nuevo curso.
-
-**Cuerpo de la petición (Request Body):**
-```json
-{
-  "titulo": "Nuevo Curso de Node.js",
-  "descripcion": "Aprende a crear APIs con Node.js y NestJS.",
-  "fecha_inicio": "2024-08-01",
-  "fecha_fin": "2024-10-01",
-  "duracion": 80,
-  "precio": 75.50,
-  "modalidad": "Online",
-  "id_docente": 2,
-  "id_tipo_curso": 1
-}
-```
-
-**Respuesta de ejemplo (al crear):**
-```json
-{
-    "message": "Curso creado exitosamente",
-    "status": 201,
-    "data": {
-        "id": 6,
-        "titulo": "Nuevo Curso de Node.js",
-        "descripcion": "Aprende a crear APIs con Node.js y NestJS.",
-        "fecha_inicio": "2024-08-01",
-        "fecha_fin": "2024-10-01",
-        "duracion": 80,
-        "precio": 75.5,
-        "modalidad": "Online",
-        "id_docente": 2,
-        "id_tipo_curso": 1
-    }
-}
-```
-
-### `PATCH http://localhost:5000/cursos/:id`
-
-**Descripción:** Actualiza parcialmente un curso existente por su ID.
-
-**Cuerpo de la petición (Request Body):**
-```json
-{
-  "titulo": "Curso de Node.js Avanzado",
-  "precio": 80.00
-}
-```
-
-### `DELETE http://localhost:5000/cursos/:id`
-
-**Descripción:** Elimina un curso por su ID.
+La respuesta es un único objeto de curso, con la misma estructura que en la creación.
 
 ---
 
-## Módulo de Módulos (dentro de Cursos)
+### 4. Actualizar un curso
 
-### `POST http://localhost:5000/cursos/:cursoId/modulos`
+- **URL:** `/cursos/:id`
+- **Método:** `PATCH`
+- **Descripción:** Actualiza parcialmente la información de un curso.
 
-**Descripción:** Crea un nuevo módulo para un curso específico.
+#### Formato de la Petición (Request Body)
 
-**Cuerpo de la petición (Request Body):**
+Todos los campos son opcionales.
+
 ```json
 {
-  "nombre": "Módulo 1: Fundamentos",
-  "descripcion": "Introducción a los conceptos básicos.",
+  "precio": 89.99,
+  "modalidad": "Híbrida"
+}
+```
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+Devuelve el objeto del curso completo con los datos actualizados.
+
+---
+
+### 5. Eliminar un curso
+
+- **URL:** `/cursos/:id`
+- **Método:** `DELETE`
+- **Descripción:** Elimina un curso de la base de datos.
+- **Respuesta:** `204 No Content`
+
+---
+
+## Endpoints de Módulos (dentro de un curso)
+
+### Crear un módulo
+
+- **URL:** `/cursos/:cursoId/modulos`
+- **Método:** `POST`
+
+#### Petición
+```json
+{
+  "nombre": "Introducción a NestJS",
+  "descripcion": "Conceptos básicos y estructura del proyecto.",
   "orden": 1
 }
 ```
 
-### `GET http://localhost:5000/cursos/:cursoId/modulos`
+### Obtener todos los módulos de un curso
 
-**Descripción:** Devuelve todos los módulos de un curso específico.
-
-### `PATCH http://localhost:5000/cursos/modulos/:id`
-
-**Descripción:** Actualiza un módulo existente por su ID.
-
-**Cuerpo de la petición (Request Body):**
-```json
-{
-  "nombre": "Módulo 1: Conceptos Fundamentales",
-  "orden": 2
-}
-```
-
-### `DELETE http://localhost:5000/cursos/modulos/:id`
-
-**Descripción:** Elimina un módulo por su ID.
+- **URL:** `/cursos/:cursoId/modulos`
+- **Método:** `GET`
 
 ---
 
-## Módulo de Horarios (dentro de Cursos)
+## Endpoints de Horarios (dentro de un curso)
 
-### `POST http://localhost:5000/cursos/:cursoId/horarios`
+### Crear un horario
 
-**Descripción:** Crea un nuevo horario para un curso específico.
+- **URL:** `/cursos/:cursoId/horarios`
+- **Método:** `POST`
 
-**Cuerpo de la petición (Request Body):**
+#### Petición
 ```json
 {
   "dia_semana": "Lunes",
@@ -339,91 +434,152 @@ Descripción: Devuelve el ranking de los cursos más populares (con más estudia
 }
 ```
 
-### `GET http://localhost:5000/cursos/:cursoId/horarios`
+### Obtener todos los horarios de un curso
 
-**Descripción:** Devuelve todos los horarios de un curso específico.
+- **URL:** `/cursos/:cursoId/horarios`
+- **Método:** `GET`
 
-### `PATCH http://localhost:5000/cursos/horarios/:id`
+---
 
-**Descripción:** Actualiza un horario existente por su ID.
+*Nota: Los endpoints para actualizar (`PATCH`) y eliminar (`DELETE`) módulos y horarios siguen un patrón similar, usando `/cursos/modulos/:id` y `/cursos/horarios/:id` respectivamente.*
 
-**Cuerpo de la petición (Request Body):**
+---
+
+# API del Módulo de Lecciones
+
+Esta sección documenta los endpoints para la gestión de lecciones, tareas y evaluaciones.
+
+**Nota Importante:** La creación y listado de lecciones se gestiona a través del módulo de cursos para mantener una estructura de recursos anidada y lógica.
+
+- **Crear una lección:** `POST /cursos/:cursoId/modulos/:moduloId/lecciones`
+- **Obtener lecciones de un módulo:** `GET /cursos/:cursoId/modulos/:moduloId/lecciones`
+
+## Endpoints de Lecciones
+
+---
+
+### 1. Obtener una lección por ID
+
+- **URL:** `/lecciones/:id`
+- **Método:** `GET`
+- **Descripción:** Devuelve una lección específica por su ID.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
 ```json
 {
-  "hora_fin": "21:30:00"
+  "id_leccion": 1,
+  "titulo": "Introducción a los Controladores",
+  "contenido": "En esta lección aprenderemos sobre los controladores en NestJS...",
+  "url_recurso": "http://example.com/video1.mp4",
+  "orden": 1,
+  "imagen_thumbnail_url": "http://example.com/thumb1.jpg",
+  "id_modulo": 1
 }
 ```
 
-### `DELETE http://localhost:5000/cursos/horarios/:id`
-
-**Descripción:** Elimina un horario por su ID.
-
 ---
 
-## Módulo de Lecciones, Tareas y Evaluaciones
+### 2. Actualizar una lección
 
-### `GET http://localhost:5000/lecciones/:id`
-**Descripción:** Devuelve una lección específica por su ID.
+- **URL:** `/lecciones/:id`
+- **Método:** `PATCH`
+- **Descripción:** Actualiza parcialmente la información de una lección.
 
-### `PATCH http://localhost:5000/lecciones/:id`
-**Descripción:** Actualiza una lección existente por su ID.
+#### Formato de la Petición (Request Body)
 
-### `DELETE http://localhost:5000/lecciones/:id`
-**Descripción:** Elimina una lección por su ID.
+Todos los campos son opcionales.
 
----
-
-### `POST http://localhost:5000/lecciones/:leccionId/tareas`
-
-**Descripción:** Crea una nueva tarea para una lección específica.
-
-**Cuerpo de la petición (Request Body):**
 ```json
 {
-  "titulo": "Tarea 1: Investigación",
-  "descripcion": "Investigar sobre los conceptos vistos en clase.",
+  "titulo": "Controladores y Rutas Avanzadas",
+  "orden": 2
+}
+```
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+Devuelve el objeto de la lección completa con los datos actualizados.
+
+---
+
+### 3. Eliminar una lección
+
+- **URL:** `/lecciones/:id`
+- **Método:** `DELETE`
+- **Descripción:** Elimina una lección de la base de datos.
+- **Respuesta:** `204 No Content`
+
+---
+
+## Endpoints de Tareas (anidadas en Lecciones)
+
+### 1. Crear una tarea para una lección
+
+- **URL:** `/lecciones/:leccionId/tareas`
+- **Método:** `POST`
+
+#### Formato de la Petición (Request Body)
+
+```json
+{
+  "titulo": "Ejercicio Práctico de Controladores",
+  "descripcion": "Crear un CRUD básico para la entidad 'producto'.",
+  "url_contenido": "http://example.com/ejercicio.pdf",
   "fecha_entrega": "2024-09-15"
 }
 ```
 
-### `GET http://localhost:5000/lecciones/:leccionId/tareas`
+#### Formato de la Respuesta (Response Body) - `201 Created`
 
-**Descripción:** Devuelve todas las tareas de una lección específica.
-
-### `PATCH http://localhost:5000/lecciones/tareas/:id`
-
-**Descripción:** Actualiza una tarea existente por su ID.
-
-### `DELETE http://localhost:5000/lecciones/tareas/:id`
-
-**Descripción:** Elimina una tarea por su ID.
+Devuelve el objeto de la tarea recién creada.
 
 ---
 
-### `POST http://localhost:5000/lecciones/:leccionId/evaluaciones`
+### 2. Obtener todas las tareas de una lección
 
-**Descripción:** Crea una nueva evaluación para una lección específica.
+- **URL:** `/lecciones/:leccionId/tareas`
+- **Método:** `GET`
 
-**Cuerpo de la petición (Request Body):**
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+Devuelve un array de objetos de tarea.
+
+---
+
+## Endpoints de Evaluaciones (anidadas en Lecciones)
+
+### 1. Crear una evaluación para una lección
+
+- **URL:** `/lecciones/:leccionId/evaluaciones`
+- **Método:** `POST`
+
+#### Formato de la Petición (Request Body)
+
 ```json
 {
   "titulo": "Examen Parcial 1",
-  "descripcion": "Evaluación de los temas del Módulo 1.",
+  "descripcion": "Evaluación de los conceptos de Módulos y Controladores.",
   "tipo": "Cuestionario",
-  "fecha_hora_inicio": "2024-09-20T09:00:00Z",
+  "fecha_hora_inicio": "2024-09-20T10:00:00Z",
   "fecha_hora_entrega": "2024-09-20T11:00:00Z",
-  "calificacion_maxima": 20
+  "calificacion_maxima": 100
 }
 ```
 
-### `GET http://localhost:5000/lecciones/:leccionId/evaluaciones`
+#### Formato de la Respuesta (Response Body) - `201 Created`
 
-**Descripción:** Devuelve todas las evaluaciones de una lección específica.
+Devuelve el objeto de la evaluación recién creada.
 
-### `PATCH http://localhost:5000/lecciones/evaluaciones/:id`
+---
 
-**Descripción:** Actualiza una evaluación existente por su ID.
+### 2. Obtener todas las evaluaciones de una lección
 
-### `DELETE http://localhost:5000/lecciones/evaluaciones/:id`
+- **URL:** `/lecciones/:leccionId/evaluaciones`
+- **Método:** `GET`
 
-**Descripción:** Elimina una evaluación por su ID.
+---
+
+*Nota: Los endpoints para actualizar (`PATCH`) y eliminar (`DELETE`) tareas y evaluaciones siguen un patrón similar, usando `/lecciones/tareas/:id` y `/lecciones/evaluaciones/:id` respectivamente.*
+]
+```

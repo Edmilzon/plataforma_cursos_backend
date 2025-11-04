@@ -76,7 +76,7 @@ BEGIN
     IF stock <= 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'No hay stock disponible para esta recompensa.';
-    END IF;
+    END IF; 
 
     -- Actualizar stock y restar puntos
     UPDATE recompensa 
@@ -142,6 +142,42 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_actualizar_ranking
+AFTER UPDATE ON usuario
+FOR EACH ROW
+BEGIN
+    -- Solo actualizar si cambió el saldo de puntos
+    IF NEW.saldo_punto <> OLD.saldo_punto THEN
+        
+        -- Si el usuario ya está en el ranking, actualiza su registro
+        IF EXISTS (SELECT 1 FROM ranking WHERE id_usuario = NEW.id_usuario) THEN
+            UPDATE ranking
+            SET puntos = NEW.saldo_punto,
+                fecha_actualizacion = NOW()
+            WHERE id_usuario = NEW.id_usuario;
+        ELSE
+            -- Si no está en el ranking, insertarlo
+            INSERT INTO ranking (id_usuario, puntos, fecha_actualizacion)
+            VALUES (NEW.id_usuario, NEW.saldo_punto, NOW());
+        END IF;
+        
+        -- Recalcular posiciones para todos los usuarios
+        UPDATE ranking r
+        JOIN (
+            SELECT id_usuario, 
+                   RANK() OVER (ORDER BY puntos DESC) AS nueva_posicion
+            FROM ranking
+        ) temp ON r.id_usuario = temp.id_usuario
+        SET r.posicion = temp.nueva_posicion;
+        
+    END IF;
+END$$
+
+DELIMITER ;
+
 
 -- Verificación final de triggers creados
 SHOW TRIGGERS;

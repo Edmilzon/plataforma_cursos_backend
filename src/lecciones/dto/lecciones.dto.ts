@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsDateString,
   Min,
+  IsUrl,
 } from 'class-validator';
 
 // DTOs para Leccion
@@ -12,7 +13,7 @@ export class CreateLeccionDto {
   @IsString() @IsNotEmpty() titulo: string;
   @IsString() @IsNotEmpty() contenido: string;
   @IsOptional() @IsString() url_recurso?: string;
-  @IsNumber() orden: number;
+  @IsOptional() @IsNumber() orden?: number;
   @IsNumber() id_modulo: number;
 }
 
@@ -21,6 +22,7 @@ export class UpdateLeccionDto {
   @IsOptional() @IsString() @IsNotEmpty() contenido?: string;
   @IsOptional() @IsString() url_recurso?: string;
   @IsOptional() @IsNumber() orden?: number;
+  @IsOptional() @IsUrl() imagen_thumbnail_url?: string;
 }
 
 // DTOs para Tarea (ya definidos en cursos.dto.ts, pero mejor aquí)

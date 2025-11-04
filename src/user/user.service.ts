@@ -55,7 +55,7 @@ export class UserService{
             const newUserId = userInsertResult.insertId;
 
             // 2. Obtener el id_rol a partir del nombre del rol
-            const rolParaBuscar = userDto.rol || UserRole.ESTUDIANTE;
+            const rolParaBuscar = userDto.rol || UserRole.Estudiante;
             const getRolQuery = `SELECT id_rol FROM rol WHERE nombre = ?`;
             const roles = await queryRunner.query(getRolQuery, [rolParaBuscar]);
             if (roles.length === 0) {
@@ -88,23 +88,18 @@ export class UserService{
     }
     
     async loginUser(loginDto: LoginUserDto): Promise<{ token: string; user: Omit<User, 'password'> }> {
-        const query = `
-            SELECT u.id_usuario, u.nombre, u.apellido, u.edad, u.correo, u.password, u.fecha_registro, u.avatar_url, u.saldo_punto, r.nombre as rol
-            FROM usuario u
-            JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
-            JOIN rol r ON ur.id_rol = r.id_rol
-            WHERE u.correo = ?;
-        `;
-        const result: User[] = await this.dataSource.query(query, [loginDto.correo]);
-        
-        if (result.length === 0) {
+        const user = await this.findUserByEmailWithPassword(loginDto.correo);
+
+        if (!user) {
             throw new UnauthorizedException("Credenciales incorrectas");
         }
-        
-        const user: User = result[0];
-        
+
+        if (!user.password) { // Verificación por si la contraseña no viniera en la consulta
+            throw new InternalServerErrorException('No se pudo verificar la contraseña del usuario.');
+        }
+
         // Cuando reactives el hasheo en el registro, debes volver a usar bcrypt.compare
-        // const isPasswordValid = await bcrypt.compare(loginDto.password, user.password!);
+        // const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
         
         const isPasswordValid = (loginDto.password === user.password); // Comparación directa para texto plano
         
@@ -157,11 +152,17 @@ export class UserService{
     }
     
     private async findUserByEmailWithPassword(email: string): Promise<User | null> {
-        const query = `SELECT * FROM usuario WHERE correo = ? LIMIT 1;`; // Needs password for login/register checks
+        const query = `
+            SELECT u.*, r.nombre as rol
+            FROM usuario u
+            LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
+            LEFT JOIN rol r ON ur.id_rol = r.id_rol
+            WHERE u.correo = ? LIMIT 1;
+        `;
         const result = await this.dataSource.query(query, [email]);
         return result.length > 0 ? result[0] : null;
     }
-    
+
     private async findUserByIdWithPassword(id: number): Promise<User | null> {
         const query = `
             SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.password, u.fecha_registro, u.avatar_url, u.saldo_punto, r.nombre as rol

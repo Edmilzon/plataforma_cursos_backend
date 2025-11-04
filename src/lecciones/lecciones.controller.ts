@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { LeccionesService } from './lecciones.service';
 import {
@@ -41,9 +42,9 @@ export class LeccionesController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.leccionesService.remove(id);
-    return { message: `Lección con ID ${id} eliminada`, status: 200 };
   }
 
   // --- Endpoints para Tareas (anidados en lecciones) ---
@@ -54,12 +55,7 @@ export class LeccionesController {
     @Body() createTareaDto: CreateTareaDto,
   ) {
     createTareaDto.id_leccion = leccionId;
-    const tarea = await this.leccionesService.createTarea(createTareaDto);
-    return {
-      message: 'Tarea creada exitosamente',
-      status: 201,
-      data: tarea,
-    };
+    return this.leccionesService.createTarea(createTareaDto);
   }
 
   @Get(':leccionId/tareas')
@@ -72,18 +68,13 @@ export class LeccionesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTareaDto: UpdateTareaDto,
   ) {
-    const tarea = await this.leccionesService.updateTarea(id, updateTareaDto);
-    return {
-      message: `Tarea con ID ${id} actualizada correctamente`,
-      status: 200,
-      data: tarea,
-    };
+    return this.leccionesService.updateTarea(id, updateTareaDto);
   }
 
   @Delete('tareas/:id')
+  @HttpCode(204)
   async removeTarea(@Param('id', ParseIntPipe) id: number) {
     await this.leccionesService.removeTarea(id);
-    return { message: `Tarea con ID ${id} eliminada`, status: 200 };
   }
 
   // --- Endpoints para Evaluaciones (anidados en lecciones) ---
@@ -94,14 +85,7 @@ export class LeccionesController {
     @Body() createEvaluacionDto: CreateEvaluacionDto,
   ) {
     createEvaluacionDto.id_leccion = leccionId;
-    const evaluacion = await this.leccionesService.createEvaluacion(
-      createEvaluacionDto,
-    );
-    return {
-      message: 'Evaluación creada exitosamente',
-      status: 201,
-      data: evaluacion,
-    };
+    return this.leccionesService.createEvaluacion(createEvaluacionDto);
   }
 
   @Get(':leccionId/evaluaciones')
@@ -116,20 +100,15 @@ export class LeccionesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEvaluacionDto: UpdateEvaluacionDto,
   ) {
-    const evaluacion = await this.leccionesService.updateEvaluacion(
+    return this.leccionesService.updateEvaluacion(
       id,
       updateEvaluacionDto,
     );
-    return {
-      message: `Evaluación con ID ${id} actualizada correctamente`,
-      status: 200,
-      data: evaluacion,
-    };
   }
 
   @Delete('evaluaciones/:id')
+  @HttpCode(204)
   async removeEvaluacion(@Param('id', ParseIntPipe) id: number) {
     await this.leccionesService.removeEvaluacion(id);
-    return { message: `Evaluación con ID ${id} eliminada`, status: 200 };
   }
 }

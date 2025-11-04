@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { CursosService } from './cursos.service';
 import {
@@ -26,32 +27,17 @@ export class CursosController {
 
   @Get()
   async findAll() {
-    const cursos = await this.cursosService.findAll();
-    return {
-      message: 'Cursos obtenidos correctamente',
-      status: 200,
-      data: cursos,
-    };
+    return this.cursosService.findAll();
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const curso = await this.cursosService.findOne(id);
-    return {
-      message: `Curso con ID ${id} obtenido correctamente`,
-      status: 200,
-      data: curso,
-    };
+    return this.cursosService.findOne(id);
   }
 
   @Post()
   async create(@Body() createCursoDto: CreateCursoDto) {
-    const curso = await this.cursosService.create(createCursoDto);
-    return {
-      message: 'Curso creado exitosamente',
-      status: 201,
-      data: curso,
-    };
+    return this.cursosService.create(createCursoDto);
   }
 
   @Patch(':id')
@@ -59,18 +45,13 @@ export class CursosController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCursoDto: UpdateCursoDto,
   ) {
-    const curso = await this.cursosService.update(id, updateCursoDto);
-    return {
-      message: `Curso con ID ${id} actualizado correctamente`,
-      status: 200,
-      data: curso,
-    };
+    return this.cursosService.update(id, updateCursoDto);
   }
 
   @Delete(':id')
+  @HttpCode(204) // No Content
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.remove(id);
-    return { message: `Curso con ID ${id} eliminado`, status: 200 };
   }
 
   // --- Endpoints para Módulos ---
@@ -82,22 +63,12 @@ export class CursosController {
   ) {
     // Aseguramos que el módulo se cree para el curso correcto
     createModuloDto.id_curso = cursoId;
-    const modulo = await this.cursosService.createModulo(createModuloDto);
-    return {
-      message: 'Módulo creado exitosamente',
-      status: 201,
-      data: modulo,
-    };
+    return this.cursosService.createModulo(createModuloDto);
   }
 
   @Get(':cursoId/modulos')
   async findAllModulosByCurso(@Param('cursoId', ParseIntPipe) cursoId: number) {
-    const modulos = await this.cursosService.findAllModulosByCurso(cursoId);
-    return {
-      message: `Módulos del curso ${cursoId} obtenidos correctamente`,
-      status: 200,
-      data: modulos,
-    };
+    return this.cursosService.findAllModulosByCurso(cursoId);
   }
 
   @Patch('modulos/:id')
@@ -105,18 +76,13 @@ export class CursosController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateModuloDto: UpdateModuloDto,
   ) {
-    const modulo = await this.cursosService.updateModulo(id, updateModuloDto);
-    return {
-      message: `Módulo con ID ${id} actualizado correctamente`,
-      status: 200,
-      data: modulo,
-    };
+    return this.cursosService.updateModulo(id, updateModuloDto);
   }
 
   @Delete('modulos/:id')
+  @HttpCode(204)
   async removeModulo(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.removeModulo(id);
-    return { message: `Módulo con ID ${id} eliminado`, status: 200 };
   }
 
   // --- Endpoints para Horarios ---
@@ -127,24 +93,14 @@ export class CursosController {
     @Body() createHorarioDto: CreateHorarioDto,
   ) {
     createHorarioDto.id_curso = cursoId;
-    const horario = await this.cursosService.createHorario(createHorarioDto);
-    return {
-      message: 'Horario creado exitosamente',
-      status: 201,
-      data: horario,
-    };
+    return this.cursosService.createHorario(createHorarioDto);
   }
 
   @Get(':cursoId/horarios')
   async findAllHorariosByCurso(
     @Param('cursoId', ParseIntPipe) cursoId: number,
   ) {
-    const horarios = await this.cursosService.findAllHorariosByCurso(cursoId);
-    return {
-      message: `Horarios del curso ${cursoId} obtenidos correctamente`,
-      status: 200,
-      data: horarios,
-    };
+    return this.cursosService.findAllHorariosByCurso(cursoId);
   }
 
   @Patch('horarios/:id')
@@ -152,18 +108,13 @@ export class CursosController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateHorarioDto: UpdateHorarioDto,
   ) {
-    const horario = await this.cursosService.updateHorario(id, updateHorarioDto);
-    return {
-      message: `Horario con ID ${id} actualizado correctamente`,
-      status: 200,
-      data: horario,
-    };
+    return this.cursosService.updateHorario(id, updateHorarioDto);
   }
 
   @Delete('horarios/:id')
+  @HttpCode(204)
   async removeHorario(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.removeHorario(id);
-    return { message: `Horario con ID ${id} eliminado`, status: 200 };
   }
 
   // NOTA: Los endpoints para Tareas y Evaluaciones se dejarán para sus propios módulos,

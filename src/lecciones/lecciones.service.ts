@@ -17,16 +17,25 @@ export class LeccionesService {
   // --- Métodos CRUD para Leccion ---
 
   async create(createLeccionDto: CreateLeccionDto) {
-    // Opcional: verificar si el módulo (id_modulo) existe
-    const query = `INSERT INTO leccion (titulo, contenido, url_recurso, orden, id_modulo) VALUES (?, ?, ?, ?, ?)`;
-    const result = await this.dataSource.query(query, [
-      createLeccionDto.titulo,
-      createLeccionDto.contenido,
-      createLeccionDto.url_recurso,
-      createLeccionDto.orden,
-      createLeccionDto.id_modulo,
-    ]);
-    return { id_leccion: result.insertId, ...createLeccionDto };
+    const fields = ['titulo', 'contenido', 'id_modulo'];
+    const values = [createLeccionDto.titulo, createLeccionDto.contenido, createLeccionDto.id_modulo];
+
+    if (createLeccionDto.url_recurso) {
+      fields.push('url_recurso');
+      values.push(createLeccionDto.url_recurso);
+    }
+    if (createLeccionDto.orden !== undefined) {
+      fields.push('orden');
+      values.push(createLeccionDto.orden);
+    }
+    // No se incluye imagen_thumbnail_url en la creación inicial, se puede añadir en update.
+
+    const placeholders = fields.map(() => '?').join(', ');
+    const query = `INSERT INTO leccion (${fields.join(', ')}) VALUES (${placeholders})`;
+
+    const result = await this.dataSource.query(query, values);
+
+    return this.findOne(result.insertId);
   }
 
   async findAllByModulo(moduloId: number) {
@@ -64,11 +73,15 @@ export class LeccionesService {
   async createTarea(createTareaDto: CreateTareaDto) {
     await this.findOne(createTareaDto.id_leccion); // Verifica que la lección exista
     const query = `INSERT INTO tarea (titulo, descripcion, url_contenido, fecha_entrega, id_leccion) VALUES (?, ?, ?, ?, ?)`;
-    const result = await this.dataSource.query(
-      query,
-      Object.values(createTareaDto),
-    );
-    return { id_tarea: result.insertId, ...createTareaDto };
+    const result = await this.dataSource.query(query, [
+      createTareaDto.titulo,
+      createTareaDto.descripcion,
+      createTareaDto.url_contenido,
+      createTareaDto.fecha_entrega,
+      createTareaDto.id_leccion,
+    ]);
+
+    return this.findOneTarea(result.insertId);
   }
 
   async findAllTareasByLeccion(leccionId: number) {
@@ -107,11 +120,17 @@ export class LeccionesService {
   async createEvaluacion(createEvaluacionDto: CreateEvaluacionDto) {
     await this.findOne(createEvaluacionDto.id_leccion); // Verifica que la lección exista
     const query = `INSERT INTO evaluacion (titulo, descripcion, tipo, fecha_hora_inicio, fecha_hora_entrega, calificacion_maxima, id_leccion) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const result = await this.dataSource.query(
-      query,
-      Object.values(createEvaluacionDto),
-    );
-    return { id_evaluacion: result.insertId, ...createEvaluacionDto };
+    const result = await this.dataSource.query(query, [
+      createEvaluacionDto.titulo,
+      createEvaluacionDto.descripcion,
+      createEvaluacionDto.tipo,
+      createEvaluacionDto.fecha_hora_inicio,
+      createEvaluacionDto.fecha_hora_entrega,
+      createEvaluacionDto.calificacion_maxima,
+      createEvaluacionDto.id_leccion,
+    ]);
+
+    return this.findOneEvaluacion(result.insertId);
   }
 
   async findAllEvaluacionesByLeccion(leccionId: number) {

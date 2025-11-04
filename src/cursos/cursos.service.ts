@@ -82,33 +82,33 @@ export class CursosService {
    * @param cursoData - Los datos para crear el curso.
    */
   async create(cursoData: CreateCursoDto): Promise<any> {
-    const {
-      titulo,
-      descripcion,
-      fecha_inicio,
-      fecha_fin,
-      duracion,
-      precio,
-      modalidad,
-      id_docente,
-      id_tipo_curso,
-    } = cursoData;
-    const query = `
-      INSERT INTO curso (titulo, descripcion, fecha_inicio, fecha_fin, duracion, precio, modalidad, id_docente, id_tipo_curso)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `;
-    const result = await this.dataSource.query(query, [
-      titulo,
-      descripcion,
-      fecha_inicio,
-      fecha_fin,
-      duracion,
-      precio,
-      modalidad,
-      id_docente,
-      id_tipo_curso,
-    ]);
-    return { id: result.insertId, ...cursoData };
+    const fields = [
+      'titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'duracion', 
+      'precio', 'modalidad', 'id_docente', 'id_tipo_curso'
+    ];
+    const values = [
+      cursoData.titulo, cursoData.descripcion, cursoData.fecha_inicio, cursoData.fecha_fin,
+      cursoData.duracion, cursoData.precio, cursoData.modalidad, cursoData.id_docente,
+      cursoData.id_tipo_curso
+    ];
+
+    if (cursoData.cupo !== undefined) {
+      fields.push('cupo');
+      values.push(cursoData.cupo);
+    }
+
+    if (cursoData.imagen_portada_url) {
+      fields.push('imagen_portada_url');
+      values.push(cursoData.imagen_portada_url);
+    }
+
+    const setClause = fields.join(', ');
+    const placeholders = fields.map(() => '?').join(', ');
+
+    const query = `INSERT INTO curso (${setClause}) VALUES (${placeholders});`;
+    const result = await this.dataSource.query(query, values);
+    
+    return this.findOne(result.insertId);
   }
 
   /**
@@ -239,11 +239,13 @@ export class CursosService {
   async createHorario(horarioData: CreateHorarioDto) {
     await this.findOne(horarioData.id_curso); // Verifica que el curso exista
     const query = `INSERT INTO horario (dia_semana, hora_inicio, hora_fin, id_curso) VALUES (?, ?, ?, ?)`;
-    const result = await this.dataSource.query(
-      query,
-      Object.values(horarioData),
-    );
-    return { id_horario: result.insertId, ...horarioData };
+    const result = await this.dataSource.query(query, [
+      horarioData.dia_semana,
+      horarioData.hora_inicio,
+      horarioData.hora_fin,
+      horarioData.id_curso,
+    ]);
+    return this.findOneHorario(result.insertId);
   }
 
   async findAllHorariosByCurso(cursoId: number) {
