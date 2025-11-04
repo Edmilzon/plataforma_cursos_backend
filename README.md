@@ -1,102 +1,3 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
 
 GET http://localhost:5000/ranking/students
 
@@ -268,3 +169,261 @@ Descripción: Devuelve el ranking de los cursos más populares (con más estudia
     "rank": "1"
   }
 ]
+
+---
+
+## Módulo de Cursos
+
+### `GET http://localhost:5000/cursos`
+
+**Descripción:** Devuelve una lista de todos los cursos disponibles.
+
+**Respuesta de ejemplo:**
+```json
+[
+  {
+    "id_curso": 1,
+    "titulo": "Introducción a Python",
+    "descripcion": "Aprende los fundamentos de Python desde cero.",
+    "fecha_inicio": "2024-01-15",
+    "fecha_fin": "2024-03-15",
+    "duracion": 60,
+    "precio": "50.00",
+    "modalidad": "Online",
+    "docente": {
+      "id_usuario": 2,
+      "nombre": "Ana",
+      "apellido": "García"
+    },
+    "tipo_curso": {
+      "id_tipo_curso": 1,
+      "nombre": "Programación"
+    }
+  }
+]
+```
+
+### `GET http://localhost:5000/cursos/:id`
+
+**Descripción:** Devuelve un curso específico por su ID.
+
+**Respuesta de ejemplo:**
+```json
+{
+  "id_curso": 1,
+  "titulo": "Introducción a Python",
+  "descripcion": "Aprende los fundamentos de Python desde cero.",
+  "fecha_inicio": "2024-01-15",
+  "fecha_fin": "2024-03-15",
+  "duracion": 60,
+  "precio": "50.00",
+  "modalidad": "Online",
+  "docente": {
+    "id_usuario": 2,
+    "nombre": "Ana",
+    "apellido": "García"
+  },
+  "tipo_curso": {
+    "id_tipo_curso": 1,
+    "nombre": "Programación"
+  }
+}
+```
+
+### `POST http://localhost:5000/cursos`
+
+**Descripción:** Crea un nuevo curso.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "titulo": "Nuevo Curso de Node.js",
+  "descripcion": "Aprende a crear APIs con Node.js y NestJS.",
+  "fecha_inicio": "2024-08-01",
+  "fecha_fin": "2024-10-01",
+  "duracion": 80,
+  "precio": 75.50,
+  "modalidad": "Online",
+  "id_docente": 2,
+  "id_tipo_curso": 1
+}
+```
+
+**Respuesta de ejemplo (al crear):**
+```json
+{
+    "message": "Curso creado exitosamente",
+    "status": 201,
+    "data": {
+        "id": 6,
+        "titulo": "Nuevo Curso de Node.js",
+        "descripcion": "Aprende a crear APIs con Node.js y NestJS.",
+        "fecha_inicio": "2024-08-01",
+        "fecha_fin": "2024-10-01",
+        "duracion": 80,
+        "precio": 75.5,
+        "modalidad": "Online",
+        "id_docente": 2,
+        "id_tipo_curso": 1
+    }
+}
+```
+
+### `PATCH http://localhost:5000/cursos/:id`
+
+**Descripción:** Actualiza parcialmente un curso existente por su ID.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "titulo": "Curso de Node.js Avanzado",
+  "precio": 80.00
+}
+```
+
+### `DELETE http://localhost:5000/cursos/:id`
+
+**Descripción:** Elimina un curso por su ID.
+
+---
+
+## Módulo de Módulos (dentro de Cursos)
+
+### `POST http://localhost:5000/cursos/:cursoId/modulos`
+
+**Descripción:** Crea un nuevo módulo para un curso específico.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "nombre": "Módulo 1: Fundamentos",
+  "descripcion": "Introducción a los conceptos básicos.",
+  "orden": 1
+}
+```
+
+### `GET http://localhost:5000/cursos/:cursoId/modulos`
+
+**Descripción:** Devuelve todos los módulos de un curso específico.
+
+### `PATCH http://localhost:5000/cursos/modulos/:id`
+
+**Descripción:** Actualiza un módulo existente por su ID.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "nombre": "Módulo 1: Conceptos Fundamentales",
+  "orden": 2
+}
+```
+
+### `DELETE http://localhost:5000/cursos/modulos/:id`
+
+**Descripción:** Elimina un módulo por su ID.
+
+---
+
+## Módulo de Horarios (dentro de Cursos)
+
+### `POST http://localhost:5000/cursos/:cursoId/horarios`
+
+**Descripción:** Crea un nuevo horario para un curso específico.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "dia_semana": "Lunes",
+  "hora_inicio": "19:00:00",
+  "hora_fin": "21:00:00"
+}
+```
+
+### `GET http://localhost:5000/cursos/:cursoId/horarios`
+
+**Descripción:** Devuelve todos los horarios de un curso específico.
+
+### `PATCH http://localhost:5000/cursos/horarios/:id`
+
+**Descripción:** Actualiza un horario existente por su ID.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "hora_fin": "21:30:00"
+}
+```
+
+### `DELETE http://localhost:5000/cursos/horarios/:id`
+
+**Descripción:** Elimina un horario por su ID.
+
+---
+
+## Módulo de Lecciones, Tareas y Evaluaciones
+
+### `GET http://localhost:5000/lecciones/:id`
+**Descripción:** Devuelve una lección específica por su ID.
+
+### `PATCH http://localhost:5000/lecciones/:id`
+**Descripción:** Actualiza una lección existente por su ID.
+
+### `DELETE http://localhost:5000/lecciones/:id`
+**Descripción:** Elimina una lección por su ID.
+
+---
+
+### `POST http://localhost:5000/lecciones/:leccionId/tareas`
+
+**Descripción:** Crea una nueva tarea para una lección específica.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "titulo": "Tarea 1: Investigación",
+  "descripcion": "Investigar sobre los conceptos vistos en clase.",
+  "fecha_entrega": "2024-09-15"
+}
+```
+
+### `GET http://localhost:5000/lecciones/:leccionId/tareas`
+
+**Descripción:** Devuelve todas las tareas de una lección específica.
+
+### `PATCH http://localhost:5000/lecciones/tareas/:id`
+
+**Descripción:** Actualiza una tarea existente por su ID.
+
+### `DELETE http://localhost:5000/lecciones/tareas/:id`
+
+**Descripción:** Elimina una tarea por su ID.
+
+---
+
+### `POST http://localhost:5000/lecciones/:leccionId/evaluaciones`
+
+**Descripción:** Crea una nueva evaluación para una lección específica.
+
+**Cuerpo de la petición (Request Body):**
+```json
+{
+  "titulo": "Examen Parcial 1",
+  "descripcion": "Evaluación de los temas del Módulo 1.",
+  "tipo": "Cuestionario",
+  "fecha_hora_inicio": "2024-09-20T09:00:00Z",
+  "fecha_hora_entrega": "2024-09-20T11:00:00Z",
+  "calificacion_maxima": 20
+}
+```
+
+### `GET http://localhost:5000/lecciones/:leccionId/evaluaciones`
+
+**Descripción:** Devuelve todas las evaluaciones de una lección específica.
+
+### `PATCH http://localhost:5000/lecciones/evaluaciones/:id`
+
+**Descripción:** Actualiza una evaluación existente por su ID.
+
+### `DELETE http://localhost:5000/lecciones/evaluaciones/:id`
+
+**Descripción:** Elimina una evaluación por su ID.
