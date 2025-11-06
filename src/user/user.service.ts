@@ -23,19 +23,17 @@ export class UserService{
             throw new BadRequestException("El email ya existe");
         }
 
-        // const hashedPassword = await bcrypt.hash(userDto.password, 10); // Hasheo deshabilitado temporalmente
-
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-            const camposAInsertar = ['nombre', 'apellido', 'correo', 'password']; // Se mantiene el campo password
+            const camposAInsertar = ['nombre', 'apellido', 'correo', 'password']; 
             const valores: (string | number)[] = [
                 userDto.nombre,
                 userDto.apellido,
                 userDto.correo,
-                userDto.password, // Se inserta la contraseña directamente
+                userDto.password,
             ];
 
             if (userDto.edad) {
@@ -47,14 +45,12 @@ export class UserService{
                 valores.push(userDto.avatar_url);
             }
 
-            // 1. Insertar en la tabla usuario
-            const placeholders = valores.map(() => '?').join(', '); // Genera ?, ?, ?, ...
+            const placeholders = valores.map(() => '?').join(', ');
             const campos = camposAInsertar.join(', ');
             const insertUserQuery = `INSERT INTO usuario (${campos}, fecha_registro) VALUES (${placeholders}, NOW())`;
             const userInsertResult = await queryRunner.query(insertUserQuery, valores);
             const newUserId = userInsertResult.insertId;
 
-            // 2. Obtener el id_rol a partir del nombre del rol
             const rolParaBuscar = userDto.rol || UserRole.Estudiante;
             const getRolQuery = `SELECT id_rol FROM rol WHERE nombre = ?`;
             const roles = await queryRunner.query(getRolQuery, [rolParaBuscar]);
@@ -63,7 +59,6 @@ export class UserService{
             }
             const rolId = roles[0].id_rol;
 
-            // 3. Insertar en la tabla usuario_rol
             const insertUsuarioRolQuery = `
                 INSERT INTO usuario_rol (id_usuario, id_rol) VALUES (?, ?)
             `;
@@ -94,13 +89,10 @@ export class UserService{
             throw new UnauthorizedException("Credenciales incorrectas");
         }
 
-        if (!user.password) { // Verificación por si la contraseña no viniera en la consulta
+        if (!user.password) {
             throw new InternalServerErrorException('No se pudo verificar la contraseña del usuario.');
         }
 
-        // Cuando reactives el hasheo en el registro, debes volver a usar bcrypt.compare
-        // const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-        
         const isPasswordValid = (loginDto.password === user.password); // Comparación directa para texto plano
         
         if (!isPasswordValid) {

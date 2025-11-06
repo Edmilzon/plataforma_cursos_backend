@@ -10,9 +10,6 @@ export class RankingService {
         private readonly dataSource: DataSource,
     ) {}
 
-    /**
-     * Obtiene el ranking de los mejores estudiantes basado en sus puntos.
-     */
     async getTopStudentsByPoints(limit: number = 10): Promise<UserRankingDto[]> {
         const query = `
             SELECT 
@@ -21,7 +18,7 @@ export class RankingService {
                 apellido,
                 avatar_url,
                 saldo_punto,
-                RANK() OVER (ORDER BY saldo_punto DESC) as 'rank'
+                ROW_NUMBER() OVER (ORDER BY saldo_punto DESC, id_usuario ASC) as 'rank'
             FROM usuario
             ORDER BY saldo_punto DESC
             LIMIT ?;
@@ -33,9 +30,6 @@ export class RankingService {
         return students;
     }
 
-    /**
-     * Obtiene el ranking de los cursos mejor valorados.
-     */
     async getTopRatedCourses(limit: number = 10): Promise<CourseRatingRankingDto[]> {
         const query = `
             SELECT 
@@ -43,7 +37,7 @@ export class RankingService {
                 c.titulo,
                 c.descripcion,
                 AVG(v.calificacion) as calificacion_promedio,
-                RANK() OVER (ORDER BY AVG(v.calificacion) DESC) as 'rank'
+                ROW_NUMBER() OVER (ORDER BY AVG(v.calificacion) DESC, c.id_curso ASC) as 'rank'
             FROM valoracion v
             JOIN curso c ON v.id_curso = c.id_curso
             GROUP BY c.id_curso
@@ -57,9 +51,6 @@ export class RankingService {
         return courses;
     }
 
-    /**
-     * Obtiene el ranking de los cursos más populares (con más inscripciones).
-     */
     async getMostPopularCourses(limit: number = 10): Promise<CoursePopularityRankingDto[]> {
         const query = `
             SELECT
@@ -67,7 +58,7 @@ export class RankingService {
                 c.titulo,
                 c.descripcion,
                 COUNT(i.id_inscripcion) as cantidad_estudiantes,
-                RANK() OVER (ORDER BY COUNT(i.id_inscripcion) DESC) as 'rank'
+                ROW_NUMBER() OVER (ORDER BY COUNT(i.id_inscripcion) DESC, c.id_curso ASC) as 'rank'
             FROM inscripcion i
             JOIN curso c ON i.id_curso = c.id_curso
             GROUP BY c.id_curso

@@ -21,10 +21,6 @@ export class CursosService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Obtiene todos los cursos de la base de datos.
-   * Une las tablas de curso, usuario (docente) y tipo_curso.
-   */
   async findAll(): Promise<Curso[]> {
     const query = `
       SELECT
@@ -46,10 +42,6 @@ export class CursosService {
     return cursos;
   }
 
-  /**
-   * Busca y obtiene un curso específico por su ID.
-   * @param id - El ID del curso a buscar.
-   */
   async findOne(id: number): Promise<Curso> {
     const query = `
       SELECT
@@ -77,10 +69,6 @@ export class CursosService {
     return result[0];
   }
 
-  /**
-   * Crea un nuevo curso en la base de datos.
-   * @param cursoData - Los datos para crear el curso.
-   */
   async create(cursoData: CreateCursoDto): Promise<any> {
     const fields = [
       'titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'duracion', 
@@ -111,11 +99,6 @@ export class CursosService {
     return this.findOne(result.insertId);
   }
 
-  /**
-   * Actualiza un curso existente.
-   * @param id - El ID del curso a actualizar.
-   * @param cursoData - Los datos a actualizar.
-   */
   async update(id: number, cursoData: UpdateCursoDto): Promise<any> {
     const fields = Object.keys(cursoData);
     const values = Object.values(cursoData);
@@ -131,22 +114,14 @@ export class CursosService {
     return this.findOne(id);
   }
 
-  /**
-   * Elimina un curso por su ID.
-   * @param id - El ID del curso a eliminar.
-   */
   async remove(id: number): Promise<void> {
-    await this.findOne(id); // Verifica si el curso existe
+    await this.findOne(id);
     const query = `DELETE FROM curso WHERE id_curso = ?`;
     await this.dataSource.query(query, [id]);
   }
 
-  // --- Métodos CRUD para otras entidades (Módulo, Tarea, etc.) ---
-  // Estos métodos son ejemplos. Deberías crear servicios y controladores separados para ellos
-  // para una mejor organización a medida que la aplicación crece.
-
   async createModulo(moduloData: CreateModuloDto) {
-    await this.findOne(moduloData.id_curso); // Verifica que el curso exista
+    await this.findOne(moduloData.id_curso); 
     const query = `INSERT INTO modulo (nombre, descripcion, orden, id_curso) VALUES (?, ?, ?, ?)`;
     const result = await this.dataSource.query(query, [
       moduloData.nombre,
@@ -158,7 +133,7 @@ export class CursosService {
   }
 
   async findAllModulosByCurso(cursoId: number) {
-    await this.findOne(cursoId); // Verifica que el curso exista
+    await this.findOne(cursoId);
     const query = `SELECT * FROM modulo WHERE id_curso = ?`;
     return this.dataSource.query(query, [cursoId]);
   }
@@ -189,7 +164,6 @@ export class CursosService {
   }
 
   async createTarea(tareaData: CreateTareaDto) {
-    // Aquí deberíamos verificar que la lección (id_leccion) existe.
     const query = `INSERT INTO tarea (titulo, descripcion, url_contenido, fecha_entrega, id_leccion) VALUES (?, ?, ?, ?, ?)`;
     const result = await this.dataSource.query(query, [
       tareaData.titulo,
@@ -202,7 +176,6 @@ export class CursosService {
   }
 
   async createEvaluacion(evaluacionData: CreateEvaluacionDto) {
-    // Aquí deberíamos verificar que la lección (id_leccion) existe.
     const query = `INSERT INTO evaluacion (titulo, descripcion, tipo, fecha_hora_inicio, fecha_hora_entrega, calificacion_maxima, id_leccion) VALUES (?, ?, ?, ?, ?, ?, ?)`;
     const result = await this.dataSource.query(
       query,
@@ -237,7 +210,7 @@ export class CursosService {
   }
 
   async createHorario(horarioData: CreateHorarioDto) {
-    await this.findOne(horarioData.id_curso); // Verifica que el curso exista
+    await this.findOne(horarioData.id_curso);
     const query = `INSERT INTO horario (dia_semana, hora_inicio, hora_fin, id_curso) VALUES (?, ?, ?, ?)`;
     const result = await this.dataSource.query(query, [
       horarioData.dia_semana,
@@ -249,7 +222,7 @@ export class CursosService {
   }
 
   async findAllHorariosByCurso(cursoId: number) {
-    await this.findOne(cursoId); // Verifica que el curso exista
+    await this.findOne(cursoId); 
     const query = `SELECT * FROM horario WHERE id_curso = ?`;
     return this.dataSource.query(query, [cursoId]);
   }

@@ -23,11 +23,6 @@ import {
 export class LeccionesController {
   constructor(private readonly leccionesService: LeccionesService) {}
 
-  // --- Endpoints para Lecciones ---
-  // Nota: La creación y listado se hacen desde el módulo de cursos/módulos
-  // POST /cursos/modulos/:moduloId/lecciones
-  // GET /cursos/modulos/:moduloId/lecciones
-
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.leccionesService.findOne(id);
@@ -46,8 +41,6 @@ export class LeccionesController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.leccionesService.remove(id);
   }
-
-  // --- Endpoints para Tareas (anidados en lecciones) ---
 
   @Post(':leccionId/tareas')
   async createTarea(
@@ -76,8 +69,6 @@ export class LeccionesController {
   async removeTarea(@Param('id', ParseIntPipe) id: number) {
     await this.leccionesService.removeTarea(id);
   }
-
-  // --- Endpoints para Evaluaciones (anidados en lecciones) ---
 
   @Post(':leccionId/evaluaciones')
   async createEvaluacion(

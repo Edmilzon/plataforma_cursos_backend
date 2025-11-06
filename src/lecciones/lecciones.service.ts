@@ -14,8 +14,6 @@ import {
 export class LeccionesService {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  // --- Métodos CRUD para Leccion ---
-
   async create(createLeccionDto: CreateLeccionDto) {
     const fields = ['titulo', 'contenido', 'id_modulo'];
     const values = [createLeccionDto.titulo, createLeccionDto.contenido, createLeccionDto.id_modulo];
@@ -28,7 +26,6 @@ export class LeccionesService {
       fields.push('orden');
       values.push(createLeccionDto.orden);
     }
-    // No se incluye imagen_thumbnail_url en la creación inicial, se puede añadir en update.
 
     const placeholders = fields.map(() => '?').join(', ');
     const query = `INSERT INTO leccion (${fields.join(', ')}) VALUES (${placeholders})`;
@@ -67,8 +64,6 @@ export class LeccionesService {
     const query = `DELETE FROM leccion WHERE id_leccion = ?`;
     await this.dataSource.query(query, [id]);
   }
-
-  // --- Métodos CRUD para Tarea ---
 
   async createTarea(createTareaDto: CreateTareaDto) {
     await this.findOne(createTareaDto.id_leccion); // Verifica que la lección exista
@@ -114,8 +109,6 @@ export class LeccionesService {
     const query = `DELETE FROM tarea WHERE id_tarea = ?`;
     await this.dataSource.query(query, [id]);
   }
-
-  // --- Métodos CRUD para Evaluacion ---
 
   async createEvaluacion(createEvaluacionDto: CreateEvaluacionDto) {
     await this.findOne(createEvaluacionDto.id_leccion); // Verifica que la lección exista

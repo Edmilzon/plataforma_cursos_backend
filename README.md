@@ -452,6 +452,15 @@ Esta sección documenta los endpoints para la gestión de lecciones, tareas y ev
 **Nota Importante:** La creación y listado de lecciones se gestiona a través del módulo de cursos para mantener una estructura de recursos anidada y lógica.
 
 - **Crear una lección:** `POST /cursos/:cursoId/modulos/:moduloId/lecciones`
+```json
+{
+  "titulo": "Introducción a los Controladores",
+  "contenido": "En esta lección aprenderemos sobre los controladores en NestJS...",
+  "url_recurso": "http://example.com/video1.mp4",
+  "orden": 1
+}
+
+```
 - **Obtener lecciones de un módulo:** `GET /cursos/:cursoId/modulos/:moduloId/lecciones`
 
 ## Endpoints de Lecciones

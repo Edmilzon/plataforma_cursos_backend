@@ -20,10 +20,15 @@ import {
   UpdateHorarioDto,
   UpdateModuloDto,
 } from './dto/cursos.dto';
+import { LeccionesService } from 'src/lecciones/lecciones.service';
+import { CreateLeccionDto } from 'src/lecciones/dto/lecciones.dto';
 
 @Controller('cursos')
 export class CursosController {
-  constructor(private readonly cursosService: CursosService) {}
+  constructor(
+    private readonly cursosService: CursosService,
+    private readonly leccionesService: LeccionesService,
+  ) {}
 
   @Get()
   async findAll() {
@@ -49,19 +54,17 @@ export class CursosController {
   }
 
   @Delete(':id')
-  @HttpCode(204) // No Content
+  @HttpCode(204) 
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.remove(id);
   }
 
-  // --- Endpoints para Módulos ---
 
   @Post(':cursoId/modulos')
   async createModulo(
     @Param('cursoId', ParseIntPipe) cursoId: number,
     @Body() createModuloDto: CreateModuloDto,
   ) {
-    // Aseguramos que el módulo se cree para el curso correcto
     createModuloDto.id_curso = cursoId;
     return this.cursosService.createModulo(createModuloDto);
   }
@@ -71,7 +74,23 @@ export class CursosController {
     return this.cursosService.findAllModulosByCurso(cursoId);
   }
 
-  @Patch('modulos/:id')
+  @Get(':cursoId/modulos/:moduloId/lecciones')
+  async findAllLeccionesByModulo(
+    @Param('moduloId', ParseIntPipe) moduloId: number,
+  ) {
+    return this.leccionesService.findAllByModulo(moduloId);
+  }
+
+  @Post(':cursoId/modulos/:moduloId/lecciones')
+  async createLeccion(
+    @Param('moduloId', ParseIntPipe) moduloId: number,
+    @Body() createLeccionDto: CreateLeccionDto,
+  ) {
+    createLeccionDto.id_modulo = moduloId;
+    return this.leccionesService.create(createLeccionDto);
+  }
+
+  @Patch(':cursoId/modulos/:id')
   async updateModulo(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateModuloDto: UpdateModuloDto,
@@ -79,7 +98,7 @@ export class CursosController {
     return this.cursosService.updateModulo(id, updateModuloDto);
   }
 
-  @Delete('modulos/:id')
+  @Delete(':cursoId/modulos/:id')
   @HttpCode(204)
   async removeModulo(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.removeModulo(id);
@@ -103,7 +122,7 @@ export class CursosController {
     return this.cursosService.findAllHorariosByCurso(cursoId);
   }
 
-  @Patch('horarios/:id')
+  @Patch(':cursoId/horarios/:id')
   async updateHorario(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateHorarioDto: UpdateHorarioDto,
@@ -111,14 +130,9 @@ export class CursosController {
     return this.cursosService.updateHorario(id, updateHorarioDto);
   }
 
-  @Delete('horarios/:id')
+  @Delete(':cursoId/horarios/:id')
   @HttpCode(204)
   async removeHorario(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.removeHorario(id);
   }
-
-  // NOTA: Los endpoints para Tareas y Evaluaciones se dejarán para sus propios módulos,
-  // ya que dependen de 'leccion' y no directamente de 'curso'.
-  // Esto mantiene el código más limpio y escalable.
-  // Si aún así deseas agregarlos aquí, la lógica sería similar a la de módulos.
 }
