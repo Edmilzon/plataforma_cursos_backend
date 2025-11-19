@@ -18,14 +18,12 @@ export class EntregasService {
   async create(createEntregaDto: CreateEntregaDto): Promise<any> {
     const { id_usuario, id_tarea, id_evaluacion, url_archivo } = createEntregaDto;
 
-    // 1. Validar que se envíe una (y solo una) actividad
     if ((!id_tarea && !id_evaluacion) || (id_tarea && id_evaluacion)) {
       throw new BadRequestException(
         'Debe proporcionar un id_tarea o un id_evaluacion, pero no ambos.',
       );
     }
 
-    // Para tareas, la URL del archivo es obligatoria
     if (id_tarea && !url_archivo) {
       throw new BadRequestException('La url_archivo es obligatoria para la entrega de tareas.');
     }
@@ -35,7 +33,6 @@ export class EntregasService {
     await queryRunner.startTransaction();
 
     try {
-      // 2. Validar que el usuario exista
       const usuario = await queryRunner.query('SELECT id_usuario FROM usuario WHERE id_usuario = ?', [id_usuario]);
       if (usuario.length === 0) {
         throw new NotFoundException(`El usuario con ID ${id_usuario} no fue encontrado.`);
@@ -43,7 +40,6 @@ export class EntregasService {
 
       let id_curso: number;
 
-      // 3. Validar la actividad y obtener el id_curso
       if (id_tarea) {
         const tareaInfo = await queryRunner.query(
           `SELECT l.id_modulo FROM tarea t JOIN leccion l ON t.id_leccion = l.id_leccion WHERE t.id_tarea = ?`,
@@ -56,7 +52,7 @@ export class EntregasService {
         );
         id_curso = cursoInfo[0].id_curso;
 
-      } else { // id_evaluacion
+      } else { 
         const evaluacionInfo = await queryRunner.query(
           `SELECT l.id_modulo FROM evaluacion e JOIN leccion l ON e.id_leccion = l.id_leccion WHERE e.id_evaluacion = ?`,
           [id_evaluacion],
@@ -69,7 +65,6 @@ export class EntregasService {
         id_curso = cursoInfo[0].id_curso;
       }
 
-      // 4. Validar que el estudiante esté inscrito en el curso
       const inscripcion = await queryRunner.query(
         'SELECT id_inscripcion FROM inscripcion WHERE id_estudiante = ? AND id_curso = ?',
         [id_usuario, id_curso],
@@ -78,7 +73,6 @@ export class EntregasService {
         throw new BadRequestException('El estudiante no está inscrito en el curso de esta actividad.');
       }
 
-      // 5. Validar que no exista una entrega previa
       const entregaExistente = await queryRunner.query(
         'SELECT id_entrega FROM entrega_actividad WHERE id_usuario = ? AND (id_tarea = ? OR id_evaluacion = ?)',
         [id_usuario, id_tarea || null, id_evaluacion || null],
@@ -87,7 +81,6 @@ export class EntregasService {
         throw new BadRequestException('Ya existe una entrega para esta actividad.');
       }
 
-      // 6. Crear la entrega
       const insertQuery = `
         INSERT INTO entrega_actividad (id_usuario, id_tarea, id_evaluacion, url_archivo, fecha_entrega, estado, calificacion)
         VALUES (?, ?, ?, ?, NOW(), 'Entregado', NULL)
@@ -120,6 +113,4 @@ export class EntregasService {
       await queryRunner.release();
     }
   }
-
-  // Aquí podrías añadir métodos para que un docente califique, o para que un alumno vea sus entregas.
 }
