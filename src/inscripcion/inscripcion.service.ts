@@ -135,12 +135,30 @@ export class InscripcionService {
   }
 
   async findAllByStudent(id_estudiante: number): Promise<any[]> {
-    const query = `
-      SELECT i.*, c.titulo as titulo_curso
-      FROM inscripcion i
-      JOIN curso c ON i.id_curso = c.id_curso
-      WHERE i.id_estudiante = ?
-    `;
-    return this.dataSource.query(query, [id_estudiante]);
-  }
+  const query = `
+    SELECT 
+      i.id_inscripcion,
+      i.fecha_inscripcion,
+      i.estado_progreso,
+      i.porcentaje_completado,
+      i.id_curso,
+      i.id_estudiante,
+      c.titulo,
+      c.descripcion,
+      c.imagen_portada_url,
+      c.precio,
+      c.duracion,
+      c.modalidad,
+      tc.nombre as tipo_curso,
+      u.nombre as docente_nombre,
+      u.apellido as docente_apellido
+    FROM inscripcion i
+    JOIN curso c ON i.id_curso = c.id_curso
+    LEFT JOIN tipo_curso tc ON c.id_tipo_curso = tc.id_tipo_curso
+    LEFT JOIN usuario u ON c.id_docente = u.id_usuario
+    WHERE i.id_estudiante = ?
+    ORDER BY i.fecha_inscripcion DESC
+  `;
+  return this.dataSource.query(query, [id_estudiante]);
+}
 }
