@@ -590,5 +590,126 @@ Devuelve el objeto de la evaluación recién creada.
 ---
 
 *Nota: Los endpoints para actualizar (`PATCH`) y eliminar (`DELETE`) tareas y evaluaciones siguen un patrón similar, usando `/lecciones/tareas/:id` y `/lecciones/evaluaciones/:id` respectivamente.*
+
+---
+
+# API del Módulo de Inscripciones
+
+Esta sección documenta los endpoints para la gestión de inscripciones a cursos.
+
+## Endpoints de Inscripciones
+
+---
+
+### 1. Crear una nueva inscripción
+
+- **URL:** `/inscripciones`
+- **Método:** `POST`
+- **Descripción:** Inscribe a un estudiante en un curso. Este proceso crea un registro de inscripción y un registro de pago asociado, incluso si el curso es gratuito.
+
+#### Formato de la Petición (Request Body)
+
+```json
+{
+  "id_curso": 1,
+  "id_estudiante": 1,
+  "metodo_pago": "Tarjeta de Crédito",
+  "puntos_utilizados": 50
+}
+```
+
+**Campos:**
+- `id_curso` (number, requerido): ID del curso al que se inscribe.
+- `id_estudiante` (number, requerido): ID del estudiante que se inscribe.
+- `metodo_pago` (string, opcional): Método de pago a utilizar. **Requerido si el curso tiene un precio mayor a 0.**
+- `puntos_utilizados` (number, opcional): Cantidad de puntos a canjear por un descuento.
+
+**Casos de uso:**
+- **Curso de pago:** Se debe proporcionar `metodo_pago`.
+- **Curso gratuito:** No es necesario enviar `metodo_pago`. El sistema registrará el pago como 'Gratis'.
+
+#### Formato de la Respuesta (Response Body) - `201 Created`
+
+```json
+{
+  "message": "Inscripción realizada con éxito.",
+  "inscripcion": {
+    "id_inscripcion": 1,
+    "fecha_inscripcion": "2023-11-15T18:30:00.000Z",
+    "estado_progreso": "Inscrito",
+    "porcentaje_completado": "0.00",
+    "id_curso": 1,
+    "id_estudiante": 1
+  }
+}
+```
+
+---
+
+### 2. Obtener todas las inscripciones de un estudiante
+
+- **URL:** `/inscripciones/estudiante/:id`
+- **Método:** `GET`
+- **Descripción:** Devuelve una lista de todos los cursos en los que un estudiante está inscrito.
+]
+
+---
+
+# API del Módulo de Entregas
+
+Esta sección documenta los endpoints para la entrega de actividades (tareas y evaluaciones).
+
+## Endpoints de Entregas
+
+---
+
+### 1. Crear una nueva entrega
+
+- **URL:** `/entregas`
+- **Método:** `POST`
+- **Descripción:** Permite a un estudiante entregar una tarea o una evaluación. El sistema valida que el estudiante esté inscrito en el curso correspondiente y que no haya una entrega previa para la misma actividad.
+
+#### Formato de la Petición (Request Body)
+
+**Para entregar una tarea:**
+```json
+{
+  "id_usuario": 1,
+  "id_tarea": 5,
+  "url_archivo": "https://example.com/path/to/mi_tarea.pdf"
+}
+```
+
+**Para entregar una evaluación (sin archivo):**
+```json
+{
+  "id_usuario": 1,
+  "id_evaluacion": 3
+}
+```
+
+**Campos:**
+- `id_usuario` (number, requerido): ID del estudiante que realiza la entrega.
+- `id_tarea` (number, opcional): ID de la tarea que se está entregando. Se debe proporcionar `id_tarea` o `id_evaluacion`.
+- `id_evaluacion` (number, opcional): ID de la evaluación que se está entregando.
+- `url_archivo` (string, opcional): URL del archivo entregado. **Requerido si se está entregando una tarea.**
+
+#### Formato de la Respuesta (Response Body) - `201 Created`
+
+```json
+{
+  "message": "Actividad entregada con éxito.",
+  "entrega": {
+    "id_entrega": 1,
+    "id_usuario": 1,
+    "id_tarea": 5,
+    "url_archivo": "https://example.com/path/to/mi_tarea.pdf",
+    "estado": "Entregado",
+    "fecha_entrega": "2023-11-16T12:00:00.000Z"
+  }
+}
+```
+
+---
 ]
 ```

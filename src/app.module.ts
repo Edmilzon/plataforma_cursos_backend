@@ -7,12 +7,14 @@ import { UserModule } from './user/user.module';
 import { RankingModule } from './ranking/ranking.module';
 import { CursosModule } from './cursos/cursos.module';
 import { LeccionesModule } from './lecciones/lecciones.module';
+import { EntregasModule } from './entregas/entregas.module';
 
 @Module({
   imports: [
     CursosModule,
     RankingModule,
     UserModule,
+    EntregasModule,
     LeccionesModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({

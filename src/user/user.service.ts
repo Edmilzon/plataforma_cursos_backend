@@ -93,7 +93,7 @@ export class UserService{
             throw new InternalServerErrorException('No se pudo verificar la contraseña del usuario.');
         }
 
-        const isPasswordValid = (loginDto.password === user.password); // Comparación directa para texto plano
+        const isPasswordValid = (loginDto.password === user.password); 
         
         if (!isPasswordValid) {
             throw new UnauthorizedException("Credenciales incorrectas");
