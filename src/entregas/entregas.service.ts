@@ -39,14 +39,16 @@ export class EntregasService {
       }
 
       let id_curso: number;
+      let id_leccion: number;
 
       if (id_tarea) {
         const tareaInfo = await queryRunner.query(
-          `SELECT l.id_modulo FROM tarea t JOIN leccion l ON t.id_leccion = l.id_leccion WHERE t.id_tarea = ?`,
+          `SELECT l.id_modulo, t.id_leccion FROM tarea t JOIN leccion l ON t.id_leccion = l.id_leccion WHERE t.id_tarea = ?`,
           [id_tarea],
         );
         if (tareaInfo.length === 0) throw new NotFoundException(`La tarea con ID ${id_tarea} no fue encontrada.`);
         
+        id_leccion = tareaInfo[0].id_leccion;
         const cursoInfo = await queryRunner.query(
             `SELECT m.id_curso FROM modulo m WHERE m.id_modulo = ?`, [tareaInfo[0].id_modulo]
         );
@@ -54,11 +56,12 @@ export class EntregasService {
 
       } else { 
         const evaluacionInfo = await queryRunner.query(
-          `SELECT l.id_modulo FROM evaluacion e JOIN leccion l ON e.id_leccion = l.id_leccion WHERE e.id_evaluacion = ?`,
+          `SELECT l.id_modulo, e.id_leccion FROM evaluacion e JOIN leccion l ON e.id_leccion = l.id_leccion WHERE e.id_evaluacion = ?`,
           [id_evaluacion],
         );
         if (evaluacionInfo.length === 0) throw new NotFoundException(`La evaluación con ID ${id_evaluacion} no fue encontrada.`);
 
+        id_leccion = evaluacionInfo[0].id_leccion;
         const cursoInfo = await queryRunner.query(
             `SELECT m.id_curso FROM modulo m WHERE m.id_modulo = ?`, [evaluacionInfo[0].id_modulo]
         );
@@ -92,6 +95,12 @@ export class EntregasService {
         url_archivo || null,
       ]);
 
+      const progresoQuery = `
+        INSERT INTO progreso_leccion (id_usuario, id_leccion, completado, fecha_completado)
+        VALUES (?, ?, TRUE, NOW())
+        ON DUPLICATE KEY UPDATE completado = TRUE, fecha_completado = NOW()
+      `;
+      await queryRunner.query(progresoQuery, [id_usuario, id_leccion]);
       await queryRunner.commitTransaction();
 
       return {
@@ -112,5 +121,26 @@ export class EntregasService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async getProgreso(id_usuario: number, id_leccion: number): Promise<any> {
+    const progreso = await this.dataSource.query(
+      'SELECT * FROM progreso_leccion WHERE id_usuario = ? AND id_leccion = ?',
+      [id_usuario, id_leccion],
+    );
+
+    if (progreso.length > 0) {
+      return {
+        ...progreso[0],
+        completado: !!progreso[0].completado,
+      };
+    }
+
+    return {
+      id_usuario,
+      id_leccion,
+      completado: false,
+      fecha_completado: null,
+    };
   }
 }

@@ -593,6 +593,7 @@ Devuelve el objeto de la evaluación recién creada.
 
 ---
 
+
 # API del Módulo de Inscripciones
 
 Esta sección documenta los endpoints para la gestión de inscripciones a cursos.
@@ -654,6 +655,92 @@ Esta sección documenta los endpoints para la gestión de inscripciones a cursos
 ]
 
 ---
+
+# API del Módulo de Entregas
+
+Esta sección documenta los endpoints para la entrega de actividades (tareas y evaluaciones) y la consulta del progreso del estudiante.
+
+## Endpoints de Entregas
+
+---
+
+### 1. Crear una nueva entrega
+
+- **URL:** `/entregas`
+- **Método:** `POST`
+- **Descripción:** Permite a un estudiante entregar una tarea o una evaluación. El sistema valida que el estudiante esté inscrito en el curso correspondiente y que no haya una entrega previa para la misma actividad. Al realizar una entrega, también se actualiza el progreso del estudiante, marcando la lección asociada como completada.
+
+#### Formato de la Petición (Request Body)
+
+**Para entregar una tarea:**
+```json
+{
+  "id_usuario": 1,
+  "id_tarea": 5,
+  "url_archivo": "https://example.com/path/to/mi_tarea.pdf"
+}
+```
+
+**Para entregar una evaluación (sin archivo):**
+```json
+{
+  "id_usuario": 1,
+  "id_evaluacion": 3
+}
+```
+
+**Campos:**
+- `id_usuario` (number, requerido): ID del estudiante que realiza la entrega.
+- `id_tarea` (number, opcional): ID de la tarea que se está entregando. Se debe proporcionar `id_tarea` o `id_evaluacion`.
+- `id_evaluacion` (number, opcional): ID de la evaluación que se está entregando.
+- `url_archivo` (string, url, opcional): URL del archivo entregado. **Requerido si se está entregando una tarea.**
+
+#### Formato de la Respuesta (Response Body) - `201 Created`
+
+```json
+{
+  "message": "Actividad entregada con éxito.",
+  "entrega": {
+    "id_entrega": 1,
+    "id_usuario": 1,
+    "id_tarea": 5,
+    "url_archivo": "https://example.com/path/to/mi_tarea.pdf",
+    "estado": "Entregado",
+    "fecha_entrega": "2023-11-16T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 2. Obtener el progreso de una lección
+
+- **URL:** `/entregas/progreso/:id_usuario/:id_leccion`
+- **Método:** `GET`
+- **Descripción:** Consulta si un usuario ha completado una lección específica. Una lección se considera completada cuando el usuario entrega al menos una de las actividades (tarea o evaluación) asociadas a ella.
+
+#### Formato de la Respuesta (Response Body) - `200 OK`
+
+**Si la lección está completada:**
+```json
+{
+  "id_progreso_leccion": 1,
+  "id_usuario": 1,
+  "id_leccion": 12,
+  "completado": true,
+  "fecha_completado": "2023-11-16T12:00:00.000Z"
+}
+```
+
+**Si la lección no está completada:**
+```json
+{
+  "id_usuario": 1,
+  "id_leccion": 13,
+  "completado": false,
+  "fecha_completado": null
+}
+```
 
 # API del Módulo de Entregas
 

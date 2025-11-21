@@ -9,6 +9,7 @@ import { CursosModule } from './cursos/cursos.module';
 import { LeccionesModule } from './lecciones/lecciones.module';
 import { EntregasModule } from './entregas/entregas.module';
 import { InscripcionModule } from './inscripcion/inscripcion.module';
+import { RecompensaModule } from './recompensa/recompensa.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { InscripcionModule } from './inscripcion/inscripcion.module';
     EntregasModule,
     LeccionesModule,
     InscripcionModule,
+    RecompensaModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql', 
