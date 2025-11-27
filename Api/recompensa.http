@@ -1,13 +1,13 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:5000
 
 ### Obtener todas las recompensas disponibles
 GET {{baseUrl}}/recompensas
 
 ### Canjear una recompensa
 # @name canjearRecompensa
-POST {{baseUrl}}/recompensas/1/canjear
+POST {{baseUrl}}/recompensas/4/canjear
 Content-Type: application/json
 
 {
-  "id_usuario": 1
+  "id_usuario": 5
 }

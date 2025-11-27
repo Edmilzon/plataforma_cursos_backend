@@ -1,0 +1,6 @@
+@api_url = http://localhost:5000
+
+### Obtener las insignias de un usuario específico
+# Reemplaza el '1' con el ID del usuario que quieres consultar.
+GET {{api_url}}/insignias/usuario/1
+Accept: application/json
