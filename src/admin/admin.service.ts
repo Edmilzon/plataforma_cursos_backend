@@ -3,7 +3,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import {
   CreateRoleDto,
   AssignPermissionsDto,
@@ -216,9 +216,11 @@ export class AdminService {
 
   async assignRolesToUser(
     userId: number,
+    adminId: number, // ID del administrador que realiza la acción
     assignRolesDto: AssignRolesToUserDto,
   ) {
     await this.findUserById(userId); // Verifica si el usuario existe
+    await this.findUserById(adminId); // Verifica que el admin exista
     const { roleIds } = assignRolesDto;
 
     // Opcional pero recomendado: Verificar que todos los roles existan.
@@ -231,13 +233,29 @@ export class AdminService {
     await queryRunner.startTransaction();
 
     try {
-      // 1. Eliminar roles actuales del usuario
+      // 1. Obtener roles actuales para comparar (opcional, para un log más detallado)
+      const currentRoles = await queryRunner.query('SELECT id_rol FROM usuario_rol WHERE id_usuario = ?', [userId]);
+      const currentRoleIds = currentRoles.map(r => r.id_rol);
+
+      // 2. Eliminar roles actuales del usuario
       await queryRunner.query('DELETE FROM usuario_rol WHERE id_usuario = ?', [userId]);
 
-      // 2. Insertar los nuevos roles
+      // 3. Insertar los nuevos roles y registrar en la bitácora
       if (roleIds.length > 0) {
         const values = roleIds.map((roleId) => [userId, roleId]);
         await queryRunner.query('INSERT INTO usuario_rol (id_usuario, id_rol) VALUES ?', [values]);
+
+        // Registrar cada rol asignado en la bitácora
+        for (const roleId of roleIds) {
+            await this.logRoleChange(
+                queryRunner,
+                adminId,
+                userId,
+                roleId,
+                'ASIGNAR',
+                `Se asignó el rol ID ${roleId} al usuario ID ${userId}.`
+            );
+        }
       }
 
       await queryRunner.commitTransaction();
@@ -247,6 +265,31 @@ export class AdminService {
       throw new InternalServerErrorException('Could not assign roles to user', err.message);
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  private async logRoleChange(
+    queryRunner: QueryRunner,
+    id_usuario_admin: number,
+    id_usuario_afectado: number,
+    id_rol: number,
+    accion: 'ASIGNAR' | 'REMOVER',
+    detalle: string,
+  ) {
+    const query = `
+        INSERT INTO bitacora_roles (id_usuario_admin, id_usuario_afectado, id_rol, accion, fecha, detalle)
+        VALUES (?, ?, ?, ?, NOW(), ?)
+    `;
+    try {
+      await queryRunner.query(query, [
+        id_usuario_admin,
+        id_usuario_afectado,
+        id_rol,
+        accion,
+        detalle,
+      ]);
+    } catch (error) {
+      console.error('Error al registrar en la bitácora de roles:', error);
     }
   }
 }

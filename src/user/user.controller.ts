@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus, Ip } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto, UserRole} from './dto/user.dto';
 import{LoginUserDto} from './dto/login-user.dto';
@@ -10,17 +10,20 @@ export class UserController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() userDto: UserDto): Promise<Omit<User, 'password'>> {
-    return this.userService.registerUser(userDto);
+  register(@Body() userDto: UserDto, @Ip() ip: string): Promise<Omit<User, 'password'>> {
+    return this.userService.registerUser(userDto, ip);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() loginDto: LoginUserDto): Promise<{
+  login(
+    @Body() loginDto: LoginUserDto,
+    @Ip() ip: string,
+  ): Promise<{
     token: string;
     user: Omit<User, 'password'>;
   }> {
-    return this.userService.loginUser(loginDto);
+    return this.userService.loginUser(loginDto, ip);
   }
 
   @Get()

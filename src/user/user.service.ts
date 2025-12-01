@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, Ip } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { UserDto, UserRole } from "./dto/user.dto";
 import { DataSource, QueryRunner } from "typeorm";
@@ -17,7 +17,7 @@ export class UserService{
         private readonly jwtService: JwtService,
     ){}
     
-    async registerUser (userDto: UserDto): Promise<Omit<User, 'password'>> {
+    async registerUser (userDto: UserDto, ip: string): Promise<Omit<User, 'password'>> {
         const userExists = await this.findUserByEmailWithPassword(userDto.correo);
         if (userExists) {
             throw new BadRequestException("El email ya existe");
@@ -64,6 +64,14 @@ export class UserService{
             `;
             await queryRunner.query(insertUsuarioRolQuery, [newUserId, rolId]);
 
+            await this.logSystemEvent(
+                queryRunner,
+                'NUEVO_REGISTRO',
+                newUserId,
+                'usuario',
+                `El usuario ${userDto.correo} se ha registrado con el rol ${rolParaBuscar}.`,
+                ip,
+            );
             await queryRunner.commitTransaction();
 
             const newUser = await this.findUserByIdWithPassword(newUserId);
@@ -82,28 +90,60 @@ export class UserService{
         }
     }
     
-    async loginUser(loginDto: LoginUserDto): Promise<{ token: string; user: Omit<User, 'password'> }> {
+    async loginUser(
+        loginDto: LoginUserDto,
+        ip: string,
+      ): Promise<{ token: string; user: Omit<User, 'password'> }> {
+        const { correo, password: loginPassword } = loginDto;
         const user = await this.findUserByEmailWithPassword(loginDto.correo);
-
+    
         if (!user) {
-            throw new UnauthorizedException("Credenciales incorrectas");
+          await this.logAuthAttempt(
+            null,
+            'INTENTO_FALLIDO',
+            ip,
+            `Intento de login fallido para el correo: ${correo}. Usuario no encontrado.`,
+          );
+          throw new UnauthorizedException('Credenciales incorrectas');
         }
-
+    
         if (!user.password) {
-            throw new InternalServerErrorException('No se pudo verificar la contraseña del usuario.');
+          await this.logAuthAttempt(
+            user.id_usuario,
+            'INTENTO_FALLIDO',
+            ip,
+            `Intento de login para ${correo}. La cuenta no tiene contraseña.`,
+          );
+          throw new InternalServerErrorException(
+            'No se pudo verificar la contraseña del usuario.',
+          );
         }
-
-        const isPasswordValid = (loginDto.password === user.password); 
-        
+    
+        const isPasswordValid = loginPassword === user.password;
+    
         if (!isPasswordValid) {
-            throw new UnauthorizedException("Credenciales incorrectas");
+          await this.logAuthAttempt(
+            user.id_usuario,
+            'INTENTO_FALLIDO',
+            ip,
+            `Intento de login fallido para ${correo}. Contraseña incorrecta.`,
+          );
+          throw new UnauthorizedException('Credenciales incorrectas');
         }
-        
-        const payload  = { sub: user.id_usuario, correo: user.correo, rol: user.rol };
+    
+        const payload = { sub: user.id_usuario, correo: user.correo, rol: user.rol };
         const token = this.jwtService.sign(payload);
-        
-        const { password, ...userToReturn } = user;
-        
+    
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userToReturn } = user; // 'password' es omitido del objeto de retorno
+    
+        await this.logAuthAttempt(
+          user.id_usuario,
+          'LOGIN',
+          ip,
+          `Login exitoso para ${correo}.`,
+        );
+    
         return {
             token, 
             user: userToReturn
@@ -178,4 +218,41 @@ export class UserService{
         const result: Omit<User, 'password'>[] = await this.dataSource.query(query, [id]);
         return result.length > 0 ? result[0] : null;
     }
+
+    private async logAuthAttempt(
+        id_usuario: number | null,
+        tipo_evento: 'LOGIN' | 'INTENTO_FALLIDO',
+        direccion_ip: string,
+        detalle: string,
+      ) {
+        const query = `
+          INSERT INTO bitacora_autenticacion (id_usuario, tipo_evento, fecha, direccion_ip, detalle)
+          VALUES (?, ?, NOW(), ?, ?)
+        `;
+        try {
+          await this.dataSource.query(query, [id_usuario, tipo_evento, direccion_ip, detalle]);
+        } catch (error) {
+          console.error('Error al registrar en la bitácora de autenticación:', error);
+        }
+      }
+
+      private async logSystemEvent(
+        queryRunner: QueryRunner,
+        tipo_evento: string,
+        id_usuario: number | null,
+        tabla_afectada: string,
+        descripcion: string,
+        direccion_ip: string,
+      ) {
+        const query = `
+          INSERT INTO bitacora_sistema (tipo_evento, id_usuario, tabla_afectada, descripcion, fecha_evento, direccion_ip)
+          VALUES (?, ?, ?, ?, NOW(), ?)
+        `;
+        try {
+          await queryRunner.query(query, [tipo_evento, id_usuario, tabla_afectada, descripcion, direccion_ip]);
+        } catch (error) {
+          // No relanzamos el error para no interrumpir el flujo principal si la bitácora falla
+          console.error('Error al registrar en la bitácora del sistema:', error);
+        }
+      }
 }

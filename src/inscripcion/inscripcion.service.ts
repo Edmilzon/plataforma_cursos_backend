@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { CreateInscripcionDto } from './dto/inscripcion.dto';
 
 @Injectable()
@@ -60,6 +60,15 @@ export class InscripcionService {
           VALUES (0.00, 0.00, 0, NOW(), 'Gratis', 'Completado', ?)
         `;
         await queryRunner.query(insertPagoQuery, [newInscripcionId]);
+
+        await this.logPago(
+          queryRunner,
+          id_estudiante,
+          newInscripcionId,
+          0.0,
+          'PAGO_REALIZADO',
+          `Inscripción a curso gratuito (ID de curso: ${id_curso}).`,
+        );
       } else {
         if (!metodo_pago) {
           throw new BadRequestException('Se requiere un método de pago para cursos que no son gratuitos.');
@@ -86,6 +95,15 @@ export class InscripcionService {
           metodo_pago,
           newInscripcionId,
         ]);
+
+        await this.logPago(
+          queryRunner,
+          id_estudiante,
+          newInscripcionId,
+          montoFinal,
+          'PAGO_REALIZADO',
+          `Pago de ${montoFinal} con ${metodo_pago} para el curso ID ${id_curso}. Puntos utilizados: ${puntos_utilizados}.`,
+        );
 
         if (puntos_utilizados > 0) {
           const nuevoSaldo = saldoPuntosUsuario - puntos_utilizados;
@@ -142,5 +160,25 @@ export class InscripcionService {
       WHERE i.id_estudiante = ?
     `;
     return this.dataSource.query(query, [id_estudiante]);
+  }
+
+  private async logPago(
+    queryRunner: QueryRunner,
+    id_usuario: number,
+    id_inscripcion: number,
+    monto: number,
+    accion: 'PAGO_REALIZADO' | 'REEMBOLSO' | 'ERROR',
+    detalle: string,
+  ) {
+    const query = `
+        INSERT INTO bitacora_pagos (id_usuario, id_inscripcion, monto, accion, fecha, detalle)
+        VALUES (?, ?, ?, ?, NOW(), ?)
+    `;
+    try {
+      await queryRunner.query(query, [id_usuario, id_inscripcion, monto, accion, detalle]);
+    } catch (error) {
+      // No relanzamos el error para no interrumpir el flujo principal si la bitácora falla
+      console.error('Error al registrar en la bitácora de pagos:', error);
+    }
   }
 }

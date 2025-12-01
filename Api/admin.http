@@ -73,7 +73,8 @@ DELETE {{baseUrl}}/usuarios/1
 ### Asignar/Actualizar roles a un usuario
 # Asigna los roles con ID 1 y 2 al usuario con ID 1
 # Si el usuario ya tiene roles, estos serán reemplazados.
-POST {{baseUrl}}/usuarios/1/roles
+# El adminId en la URL debe ser el ID de un usuario administrador existente.
+POST {{baseUrl}}/usuarios/1/roles?adminId=1
 Content-Type: application/json
 
 {

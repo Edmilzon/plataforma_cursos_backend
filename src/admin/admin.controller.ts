@@ -9,6 +9,7 @@ import {
   HttpCode,
   Put,
   UsePipes,
+  Query,
   ValidationPipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
@@ -100,8 +101,9 @@ export class AdminController {
   @Post('usuarios/:id/roles')
   assignRolesToUser(
     @Param('id', ParseIntPipe) id: number,
+    @Query('adminId', ParseIntPipe) adminId: number,
     @Body() assignRolesToUserDto: AssignRolesToUserDto,
   ) {
-    return this.adminService.assignRolesToUser(id, assignRolesToUserDto);
+    return this.adminService.assignRolesToUser(id, adminId, assignRolesToUserDto);
   }
 }
