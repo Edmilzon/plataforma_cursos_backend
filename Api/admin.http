@@ -33,9 +33,49 @@ Content-Type: application/json
 {
   "permissionIds": [1, 2, 3]
 }
+
+### Obtener los permisos de un rol específico
+# Reemplaza el 4 con el ID del rol
+GET {{baseUrl}}/roles/4/permisos
+
 # ==============================================================================
 # PERMISOS
 # ==============================================================================
 
 ### Obtener todos los permisos
 GET {{baseUrl}}/permisos
+
+# ==============================================================================
+# USUARIOS
+# ==============================================================================
+
+### Obtener todos los usuarios con sus roles
+GET {{baseUrl}}/usuarios
+
+### Obtener un usuario por ID
+# @name getUserById
+GET {{baseUrl}}/usuarios/1
+
+### Actualizar un usuario
+# Reemplaza el 1 con el ID del usuario que quieres actualizar
+PUT {{baseUrl}}/usuarios/1
+Content-Type: application/json
+
+{
+  "nombre": "AdminUpdated",
+  "correo": "admin.updated@example.com"
+}
+
+### Eliminar un usuario
+# Reemplaza el 1 con el ID del usuario que quieres eliminar
+DELETE {{baseUrl}}/usuarios/1
+
+### Asignar/Actualizar roles a un usuario
+# Asigna los roles con ID 1 y 2 al usuario con ID 1
+# Si el usuario ya tiene roles, estos serán reemplazados.
+POST {{baseUrl}}/usuarios/1/roles
+Content-Type: application/json
+
+{
+  "roleIds": [1, 2]
+}

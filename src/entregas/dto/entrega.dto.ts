@@ -2,9 +2,9 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
   IsUrl,
-  ValidateIf,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class CreateEntregaDto {
@@ -23,4 +23,12 @@ export class CreateEntregaDto {
   @IsOptional()
   @IsUrl()
   url_archivo?: string;
+}
+
+export class CalificarEntregaDto {
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  @Max(100)
+  calificacion: number;
 }

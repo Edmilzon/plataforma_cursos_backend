@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { CreateEntregaDto } from './dto/entrega.dto';
+import { CreateEntregaDto, CalificarEntregaDto } from './dto/entrega.dto';
 
 @Injectable()
 export class EntregasService {
@@ -142,5 +142,30 @@ export class EntregasService {
       completado: false,
       fecha_completado: null,
     };
+  }
+
+  async findOne(id: number): Promise<any> {
+    const entrega = await this.dataSource.query(
+      'SELECT * FROM entrega_actividad WHERE id_entrega = ?',
+      [id],
+    );
+    if (entrega.length === 0) {
+      throw new NotFoundException(`La entrega con ID ${id} no fue encontrada.`);
+    }
+    return entrega[0];
+  }
+
+  async calificar(
+    id: number,
+    calificarEntregaDto: CalificarEntregaDto,
+  ): Promise<any> {
+    await this.findOne(id); // Verifica que la entrega exista
+    const { calificacion } = calificarEntregaDto;
+
+    const query =
+      "UPDATE entrega_actividad SET calificacion = ?, estado = 'Calificado' WHERE id_entrega = ?";
+    await this.dataSource.query(query, [calificacion, id]);
+
+    return this.findOne(id);
   }
 }

@@ -1,0 +1,17 @@
+@baseUrl = http://localhost:5000/entregas
+
+### Calificar una entrega (Tarea o Evaluación)
+# Reemplaza el :id con el ID de la entrega_actividad que quieres calificar.
+# El ID de la entrega se obtiene cuando un estudiante realiza una entrega.
+#
+# El cuerpo de la petición debe contener la calificación.
+# La calificación debe ser un número entre 0 y 100.
+#
+# Al calificar, el estado de la entrega cambiará a 'Calificado' y si la nota
+# es de aprobación, se disparará el trigger para asignar puntos al usuario.
+PATCH {{baseUrl}}/1/calificar
+Content-Type: application/json
+
+{
+  "calificacion": 85
+}

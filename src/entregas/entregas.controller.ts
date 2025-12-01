@@ -1,6 +1,16 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+} from '@nestjs/common';
 import { EntregasService } from './entregas.service';
-import { CreateEntregaDto } from './dto/entrega.dto';
+import { CalificarEntregaDto, CreateEntregaDto } from './dto/entrega.dto';
 
 @Controller('entregas')
 export class EntregasController {
@@ -18,5 +28,13 @@ export class EntregasController {
     @Param('id_leccion', ParseIntPipe) id_leccion: number,
   ) {
     return this.entregasService.getProgreso(id_usuario, id_leccion);
+  }
+
+  @Patch(':id/calificar')
+  calificar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() calificarEntregaDto: CalificarEntregaDto,
+  ) {
+    return this.entregasService.calificar(id, calificarEntregaDto);
   }
 }
