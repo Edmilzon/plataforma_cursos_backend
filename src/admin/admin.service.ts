@@ -30,7 +30,7 @@ export class AdminService {
     return roles[0];
   }
 
-  async createRole(createRoleDto: CreateRoleDto) {
+  async createRole(createRoleDto: CreateRoleDto, adminId: number, ip: string) {
     const { nombre, descripcion, icono_url } = createRoleDto;
     const query =
       'INSERT INTO rol (nombre, descripcion, icono_url) VALUES (?, ?, ?)';
@@ -40,14 +40,22 @@ export class AdminService {
         descripcion,
         icono_url,
       ]);
+      await this.logSystemEvent(
+        this.dataSource.createQueryRunner(),
+        'CREAR_ROL',
+        adminId,
+        'rol',
+        `El administrador ID ${adminId} creó el rol '${nombre}'.`,
+        ip,
+      );
       return { id_rol: result.insertId, ...createRoleDto };
     } catch (error) {
       throw new InternalServerErrorException('Could not create role', error.message);
     }
   }
 
-  async deleteRole(id: number) {
-    await this.findRoleById(id); // Verifica si el rol existe
+  async deleteRole(id: number, adminId: number, ip: string) {
+    const role = await this.findRoleById(id); // Verifica si el rol existe
     // Usamos una transacción para asegurar la consistencia
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -56,6 +64,14 @@ export class AdminService {
       await queryRunner.query('DELETE FROM rol_permiso WHERE id_rol = ?', [id]);
       await queryRunner.query('DELETE FROM usuario_rol WHERE id_rol = ?', [id]);
       await queryRunner.query('DELETE FROM rol WHERE id_rol = ?', [id]);
+      await this.logSystemEvent(
+        queryRunner,
+        'ELIMINAR_ROL',
+        adminId,
+        'rol',
+        `El administrador ID ${adminId} eliminó el rol '${role.nombre}' (ID: ${id}).`,
+        ip,
+      );
       await queryRunner.commitTransaction();
       return { message: `Role with ID ${id} deleted successfully` };
     } catch (err) {
@@ -140,7 +156,7 @@ export class AdminService {
     return users[0];
   }
 
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto, adminId: number, ip: string) {
     const { nombre, apellido, edad, correo, password, avatar_url } =
       createUserDto;
     // Aquí deberías hashear la contraseña antes de guardarla
@@ -149,8 +165,11 @@ export class AdminService {
       INSERT INTO usuario (nombre, apellido, edad, correo, password, avatar_url, fecha_registro) 
       VALUES (?, ?, ?, ?, ?, ?, NOW())
     `;
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const result = await this.dataSource.query(query, [
+      const result = await queryRunner.query(query, [
         nombre,
         apellido,
         edad,
@@ -158,6 +177,15 @@ export class AdminService {
         password,
         avatar_url,
       ]);
+      await this.logSystemEvent(
+        queryRunner,
+        'CREAR_USUARIO_ADMIN',
+        adminId,
+        'usuario',
+        `El administrador ID ${adminId} creó al usuario '${correo}' (ID: ${result.insertId}).`,
+        ip,
+      );
+      await queryRunner.commitTransaction();
       return { id_usuario: result.insertId, ...createUserDto };
     } catch (error) {
       // Chequea si el error es por correo duplicado
@@ -166,11 +194,14 @@ export class AdminService {
           `User with email ${correo} already exists.`,
         );
       }
+      await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
         'Could not create user',
         error.message,
       );
-    }
+    } finally {
+      await queryRunner.release();
+    } 
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto) {
@@ -194,8 +225,8 @@ export class AdminService {
     }
   }
 
-  async deleteUser(id: number) {
-    await this.findUserById(id); // Verifica si el usuario existe
+  async deleteUser(id: number, adminId: number, ip: string) {
+    const user = await this.findUserById(id); // Verifica si el usuario existe
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -204,6 +235,14 @@ export class AdminService {
       await queryRunner.query('DELETE FROM usuario_rol WHERE id_usuario = ?', [id]);
       // Finalmente, eliminar el usuario
       await queryRunner.query('DELETE FROM usuario WHERE id_usuario = ?', [id]);
+      await this.logSystemEvent(
+        queryRunner,
+        'ELIMINAR_USUARIO',
+        adminId,
+        'usuario',
+        `El administrador ID ${adminId} eliminó al usuario '${user.correo}' (ID: ${id}).`,
+        ip,
+      );
       await queryRunner.commitTransaction();
       return { message: `User with ID ${id} deleted successfully` };
     } catch (err) {
@@ -290,6 +329,29 @@ export class AdminService {
       ]);
     } catch (error) {
       console.error('Error al registrar en la bitácora de roles:', error);
+    }
+  }
+
+  private async logSystemEvent(
+    queryRunner: QueryRunner,
+    tipo_evento: string,
+    id_usuario: number | null,
+    tabla_afectada: string,
+    descripcion: string,
+    direccion_ip: string,
+  ) {
+    const query = `
+      INSERT INTO bitacora_sistema (tipo_evento, id_usuario, tabla_afectada, descripcion, fecha_evento, direccion_ip)
+      VALUES (?, ?, ?, ?, NOW(), ?)
+    `;
+    try {
+      await queryRunner.query(query, [tipo_evento, id_usuario, tabla_afectada, descripcion, direccion_ip]);
+    } catch (error) {
+      console.error('Error al registrar en la bitácora del sistema:', error);
+    } finally {
+        if (!queryRunner.isTransactionActive) {
+            await queryRunner.release();
+        }
     }
   }
 }

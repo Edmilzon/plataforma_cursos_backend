@@ -8,7 +8,8 @@
 GET {{baseUrl}}/roles
 
 ### Crear un nuevo rol
-POST {{baseUrl}}/roles
+# El adminId en la URL debe ser el ID de un usuario administrador existente.
+POST {{baseUrl}}/roles?adminId=1
 Content-Type: application/json
 
 {
@@ -22,8 +23,9 @@ Content-Type: application/json
 GET {{baseUrl}}/roles/4
 
 ### Eliminar un rol
-# Reemplaza el 4 con el ID del rol que quieres eliminar
-DELETE {{baseUrl}}/roles/4
+# Reemplaza el 4 con el ID del rol que quieres eliminar.
+# El adminId en la URL debe ser el ID de un usuario administrador existente.
+DELETE {{baseUrl}}/roles/4?adminId=1
 
 ### Asignar permisos a un rol
 # Asigna los permisos con ID 1, 2 y 3 al rol con ID 4
@@ -52,6 +54,19 @@ GET {{baseUrl}}/permisos
 ### Obtener todos los usuarios con sus roles
 GET {{baseUrl}}/usuarios
 
+### Crear un nuevo usuario (como Admin)
+# El adminId en la URL debe ser el ID de un usuario administrador existente.
+POST {{baseUrl}}/usuarios?adminId=1
+Content-Type: application/json
+
+{
+  "nombre": "NuevoUsuario",
+  "apellido": "PorAdmin",
+  "edad": 25,
+  "correo": "nuevoadmin@example.com",
+  "password": "supersecretpassword"
+}
+
 ### Obtener un usuario por ID
 # @name getUserById
 GET {{baseUrl}}/usuarios/1
@@ -67,8 +82,9 @@ Content-Type: application/json
 }
 
 ### Eliminar un usuario
-# Reemplaza el 1 con el ID del usuario que quieres eliminar
-DELETE {{baseUrl}}/usuarios/1
+# Reemplaza el ID del usuario que quieres eliminar.
+# El adminId en la URL debe ser el ID de un usuario administrador existente.
+DELETE {{baseUrl}}/usuarios/1?adminId=1
 
 ### Asignar/Actualizar roles a un usuario
 # Asigna los roles con ID 1 y 2 al usuario con ID 1

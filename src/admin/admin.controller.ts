@@ -9,6 +9,7 @@ import {
   HttpCode,
   Put,
   UsePipes,
+  Ip,
   Query,
   ValidationPipe,
 } from '@nestjs/common';
@@ -32,19 +33,26 @@ export class AdminController {
   }
 
   @Post('roles')
-  createRole(@Body() createRoleDto: CreateRoleDto) {
-    return this.adminService.createRole(createRoleDto);
+  createRole(
+    @Body() createRoleDto: CreateRoleDto,
+    @Query('adminId', ParseIntPipe) adminId: number,
+    @Ip() ip: string,
+  ) {
+    return this.adminService.createRole(createRoleDto, adminId, ip);
   }
 
   @Get('roles/:id')
   findRoleById(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.findRoleById(id);
   }
-
   @Delete('roles/:id')
   @HttpCode(204)
-  deleteRole(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.deleteRole(id);
+  deleteRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('adminId', ParseIntPipe) adminId: number,
+    @Ip() ip: string,
+  ) {
+    return this.adminService.deleteRole(id, adminId, ip);
   }
 
   @Post('roles/:id/permisos')
@@ -75,8 +83,12 @@ export class AdminController {
   }
 
   @Post('usuarios')
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.adminService.createUser(createUserDto);
+  createUser(
+    @Body() createUserDto: CreateUserDto,
+    @Query('adminId', ParseIntPipe) adminId: number,
+    @Ip() ip: string,
+  ) {
+    return this.adminService.createUser(createUserDto, adminId, ip);
   }
 
   @Get('usuarios/:id')
@@ -94,8 +106,12 @@ export class AdminController {
 
   @Delete('usuarios/:id')
   @HttpCode(204)
-  deleteUser(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.deleteUser(id);
+  deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('adminId', ParseIntPipe) adminId: number,
+    @Ip() ip: string,
+  ) {
+    return this.adminService.deleteUser(id, adminId, ip);
   }
 
   @Post('usuarios/:id/roles')
