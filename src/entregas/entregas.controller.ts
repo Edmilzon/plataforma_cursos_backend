@@ -37,4 +37,10 @@ export class EntregasController {
   ) {
     return this.entregasService.calificar(id, calificarEntregaDto);
   }
+
+  @Get('/tarea/:idTarea')
+  async getDeliveriesByTask(@Param('idTarea') idTarea: string) {
+  return this.entregasService.getDeliveriesByTask(Number(idTarea));
+  }
+
 }
