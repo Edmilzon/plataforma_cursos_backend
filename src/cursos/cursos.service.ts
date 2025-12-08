@@ -66,7 +66,22 @@ export class CursosService {
       throw new NotFoundException(`El curso con ID ${id} no fue encontrado.`);
     }
 
-    return result[0];
+    const curso = result[0];
+
+    const horariosQuery = `
+      SELECT 
+          dia_semana, 
+          TIME_FORMAT(hora_inicio, "%H:%i") as hora_inicio, 
+          TIME_FORMAT(hora_fin, "%H:%i") as hora_fin 
+        FROM horario 
+        WHERE id_curso = ?
+      `;
+      const horarios = await this.dataSource.query(horariosQuery, [id]);
+      const horarioTexto = horarios.length > 0 
+      ? horarios.map((h: any) => `${h.dia_semana} ${h.hora_inicio} - ${h.hora_fin}`).join(', ')
+      : 'Horario por definir';
+
+      return { ...curso, horario_clases: horarioTexto };
   }
 
   async create(cursoData: CreateCursoDto): Promise<any> {
@@ -250,5 +265,21 @@ export class CursosService {
     await this.findOneHorario(id);
     const query = `DELETE FROM horario WHERE id_horario = ?`;
     await this.dataSource.query(query, [id]);
+  }
+
+  async getTasksByCourse(idCurso: number) {
+    const query = `
+      SELECT 
+        id_tarea,
+        nombre,
+        descripcion,
+        fecha_limite,
+        fecha_creacion
+      FROM tarea
+      WHERE id_curso = ?
+    `;
+
+    const result = await this.dataSource.query(query, [idCurso]);
+    return result;
   }
 }

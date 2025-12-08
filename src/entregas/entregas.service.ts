@@ -178,7 +178,7 @@ export class EntregasService {
       e.calificacion,
       u.nombre AS nombre_estudiante,
       u.apellido AS apellido_estudiante
-    FROM entrega e
+    FROM entrega_actividad e
     JOIN usuario u ON u.id_usuario = e.id_usuario
     WHERE e.id_tarea = ?
   `;
