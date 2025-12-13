@@ -7,8 +7,6 @@ import { JwtService } from "@nestjs/jwt";
 import { LoginUserDto } from "./dto/login-user.dto";
 import { User } from "./interfaces/user.interface";
 
-
-
 @Injectable()
 export class UserService{
     constructor(
@@ -135,7 +133,7 @@ export class UserService{
         const token = this.jwtService.sign(payload);
     
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...userToReturn } = user; // 'password' es omitido del objeto de retorno
+        const { password, ...userToReturn } = user;
     
         await this.logAuthAttempt(
           user.id_usuario,
@@ -197,7 +195,8 @@ export class UserService{
 
     private async findUserByIdWithPassword(id: number): Promise<User | null> {
         const query = `
-            SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.password, u.fecha_registro, u.avatar_url, u.saldo_punto, r.nombre as rol
+            SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.password, 
+                   u.fecha_registro, u.avatar_url, u.saldo_punto, u.edad, r.nombre as rol
             FROM usuario u
             LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
             LEFT JOIN rol r ON ur.id_rol = r.id_rol
@@ -209,7 +208,8 @@ export class UserService{
 
     async findUserById(id: number): Promise<Omit<User, 'password'> | null> {
         const query = `
-            SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.fecha_registro, u.avatar_url, u.saldo_punto, r.nombre as rol
+            SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.fecha_registro, 
+                   u.avatar_url, u.saldo_punto, u.edad, r.nombre as rol
             FROM usuario u
             LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
             LEFT JOIN rol r ON ur.id_rol = r.id_rol
@@ -251,113 +251,106 @@ export class UserService{
         try {
           await queryRunner.query(query, [tipo_evento, id_usuario, tabla_afectada, descripcion, direccion_ip]);
         } catch (error) {
-          // No relanzamos el error para no interrumpir el flujo principal si la bitácora falla
           console.error('Error al registrar en la bitácora del sistema:', error);
         }
       }
 
       async updateUserProfile(
-    userId: number, 
-    updateUserProfileDto: UpdateUserProfileDto, 
-    ip: string,
-    currentUserId: number
-): Promise<Omit<User, 'password'>> {
-    
-    
-    if (userId !== currentUserId) {
-        throw new UnauthorizedException('No puedes actualizar el perfil de otro usuario');
+        userId: number, 
+        updateUserProfileDto: UpdateUserProfileDto, 
+        ip: string,
+        currentUserId: number
+    ): Promise<Omit<User, 'password'>> {
+        
+        if (userId !== currentUserId) {
+            throw new UnauthorizedException('No puedes actualizar el perfil de otro usuario');
+        }
+
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const existingUser = await this.findUserByIdWithPassword(userId);
+            if (!existingUser) {
+                throw new NotFoundException(`Usuario con ID #${userId} no encontrado.`);
+            }
+
+            const camposAActualizar: string[] = [];
+            const valores: any[] = [];
+
+            if (updateUserProfileDto.nombre !== undefined) {
+                camposAActualizar.push('nombre = ?');
+                valores.push(updateUserProfileDto.nombre.trim());
+            }
+
+            if (updateUserProfileDto.apellido !== undefined) {
+                camposAActualizar.push('apellido = ?');
+                valores.push(updateUserProfileDto.apellido.trim());
+            }
+
+            if (updateUserProfileDto.edad !== undefined) {
+                camposAActualizar.push('edad = ?');
+                valores.push(updateUserProfileDto.edad);
+            }
+
+            if (updateUserProfileDto.password !== undefined && updateUserProfileDto.password.trim() !== '') {
+                const hashedPassword = await bcrypt.hash(updateUserProfileDto.password, 10);
+                camposAActualizar.push('password = ?');
+                valores.push(hashedPassword);
+                console.log(`Usuario ${userId} cambió su contraseña`);
+            }
+
+            if (camposAActualizar.length === 0) {
+                throw new BadRequestException('No se proporcionaron datos para actualizar');
+            }
+
+            valores.push(userId);
+
+            const updateQuery = `
+                UPDATE usuario 
+                SET ${camposAActualizar.join(', ')} 
+                WHERE id_usuario = ?
+            `;
+
+            console.log('🔧 Query de actualización:', updateQuery);
+            console.log('Valores:', valores);
+
+            await queryRunner.query(updateQuery, valores);
+
+            await this.logSystemEvent(
+                queryRunner,
+                'ACTUALIZACION_PERFIL',
+                userId,
+                'usuario',
+                `Usuario actualizó su perfil. Campos actualizados: ${camposAActualizar.join(', ')}`,
+                ip,
+            );
+
+            await queryRunner.commitTransaction();
+
+            const updatedUser = await this.findUserById(userId);
+            if (!updatedUser) {
+                throw new Error('Error al obtener el usuario actualizado');
+            }
+
+            console.log('📤 Usuario devuelto después de actualizar:', updatedUser);
+            console.log('📤 ¿Contiene edad?', 'edad' in updatedUser);
+            console.log('📤 Valor de edad:', updatedUser.edad);
+
+            return updatedUser;
+
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            if (err instanceof NotFoundException || 
+                err instanceof UnauthorizedException || 
+                err instanceof BadRequestException) {
+                throw err;
+            }
+            console.error('Error en updateUserProfile:', err);
+            throw new InternalServerErrorException('Error al actualizar el usuario.', err.message);
+        } finally {
+            await queryRunner.release();
+        }
     }
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-        const existingUser = await this.findUserByIdWithPassword(userId);
-        if (!existingUser) {
-            throw new NotFoundException(`Usuario con ID #${userId} no encontrado.`);
-        }
-
-        
-        const camposAActualizar: string[] = [];
-        const valores: any[] = [];
-
-        if (updateUserProfileDto.nombre !== undefined) {
-            camposAActualizar.push('nombre = ?');
-            valores.push(updateUserProfileDto.nombre.trim());
-        }
-
-        if (updateUserProfileDto.apellido !== undefined) {
-            camposAActualizar.push('apellido = ?');
-            valores.push(updateUserProfileDto.apellido.trim());
-        }
-
-        if (updateUserProfileDto.edad !== undefined) {
-            camposAActualizar.push('edad = ?');
-            valores.push(updateUserProfileDto.edad);
-        }
-
-        if (updateUserProfileDto.password !== undefined && updateUserProfileDto.password.trim() !== '') {
-            
-            const hashedPassword = await bcrypt.hash(updateUserProfileDto.password, 10);
-            camposAActualizar.push('password = ?');
-            valores.push(hashedPassword);
-            
-            
-            console.log(`Usuario ${userId} cambió su contraseña`);
-        }
-
-        
-        if (camposAActualizar.length === 0) {
-            throw new BadRequestException('No se proporcionaron datos para actualizar');
-        }
-
-        
-        valores.push(userId);
-
-        
-        const updateQuery = `
-            UPDATE usuario 
-            SET ${camposAActualizar.join(', ')} 
-            WHERE id_usuario = ?
-        `;
-
-        console.log('🔧 Query de actualización:', updateQuery);
-        console.log('Valores:', valores);
-
-        await queryRunner.query(updateQuery, valores);
-
-        // Registrar en bitácora
-        await this.logSystemEvent(
-            queryRunner,
-            'ACTUALIZACION_PERFIL',
-            userId,
-            'usuario',
-            `Usuario actualizó su perfil. Campos actualizados: ${camposAActualizar.join(', ')}`,
-            ip,
-        );
-
-        await queryRunner.commitTransaction();
-
-        
-        const updatedUser = await this.findUserById(userId);
-        if (!updatedUser) {
-            throw new Error('Error al obtener el usuario actualizado');
-        }
-
-        return updatedUser;
-
-    } catch (err) {
-        await queryRunner.rollbackTransaction();
-        if (err instanceof NotFoundException || 
-            err instanceof UnauthorizedException || 
-            err instanceof BadRequestException) {
-            throw err;
-        }
-        console.error('Error en updateUserProfile:', err);
-        throw new InternalServerErrorException('Error al actualizar el usuario.', err.message);
-    } finally {
-        await queryRunner.release();
-    }
-  }
 }
