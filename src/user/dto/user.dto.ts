@@ -37,3 +37,25 @@ export class UserDto {
     @IsEnum(UserRole)
     rol?: UserRole;
 }
+
+export class UpdateUserDto {
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    nombre?: string;
+    
+    @IsOptional()
+    @IsNumber()
+    @IsNotEmpty()
+    apellido?: string;
+    
+    @IsOptional()
+    @IsNumber()
+    @IsNotEmpty()
+    edad?: number;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    password?: string;
+}
