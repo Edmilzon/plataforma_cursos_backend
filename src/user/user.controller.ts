@@ -40,4 +40,9 @@ export class UserController {
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
   }
+
+  @Get(':id/saldo-punto')
+  getSaldoPunto(@Param('id', ParseIntPipe) id: number): Promise<{ saldo_punto: number }> {
+    return this.userService.getSaldoPunto(id);
+  }
 }

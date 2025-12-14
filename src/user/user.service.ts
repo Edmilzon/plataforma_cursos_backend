@@ -168,6 +168,17 @@ export class UserService{
         return user;
     }
 
+    async getSaldoPunto(id: number): Promise<{ saldo_punto: number }> {
+        const query = `SELECT saldo_punto FROM usuario WHERE id_usuario = ?`;
+        const result = await this.dataSource.query(query, [id]);
+    
+        if (result.length === 0) {
+            throw new NotFoundException(`Usuario con ID #${id} no encontrado.`);
+        }
+    
+        return result[0];
+    }
+
     async findByRole(rol: string): Promise<Omit<User, 'password'>[]> {
         const query = `
             SELECT u.id_usuario, u.nombre, u.apellido, u.edad, u.correo, u.fecha_registro, u.avatar_url, u.saldo_punto, r.nombre as rol

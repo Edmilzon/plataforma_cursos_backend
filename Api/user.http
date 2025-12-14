@@ -1,0 +1,4 @@
+@baseUrl = http://localhost:5000/user
+### Obtener saldo de puntos de un usuario por ID
+# Reemplaza el 1 con el ID del usuario
+GET {{baseUrl}}/1/saldo-punto
