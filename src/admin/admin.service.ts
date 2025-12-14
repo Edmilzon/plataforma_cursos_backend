@@ -17,17 +17,100 @@ export class AdminService {
   constructor(private readonly dataSource: DataSource) {}
   
   async findAllRoles() {
-    const query = 'SELECT * FROM rol';
-    return this.dataSource.query(query);
+  try {
+    // ...
+    
+    // 1. Obtener todos los roles
+    const rolesQuery = 'SELECT * FROM rol ORDER BY id_rol';
+    const roles = await this.dataSource.query(rolesQuery);
+    // ...
+    
+    // 2. Obtener TODAS las relaciones rol-permiso
+    const relacionesQuery = `
+      SELECT 
+        rp.id_rol,
+        p.id_permiso,
+        p.nombre,
+        p.descripcion
+      FROM rol_permiso rp
+      JOIN permiso p ON rp.id_permiso = p.id_permiso
+      ORDER BY rp.id_rol, p.id_permiso
+    `;
+    
+    const relaciones = await this.dataSource.query(relacionesQuery);
+    // ...
+    
+    // 3. Agrupar permisos por rol
+    const permisosPorRol = new Map();
+    
+    for (const relacion of relaciones) {
+      const roleId = relacion.id_rol;
+      
+      if (!permisosPorRol.has(roleId)) {
+        permisosPorRol.set(roleId, []);
+      }
+      
+      permisosPorRol.get(roleId).push({
+        id_permiso: relacion.id_permiso,
+        nombre: relacion.nombre,
+        descripcion: relacion.descripcion
+      });
+    }
+    
+    // 4. Combinar roles con sus permisos
+    const rolesCompletos = roles.map((role) => {
+      const permisos = permisosPorRol.get(role.id_rol) || [];
+      
+      // ...
+      if (permisos.length > 0) {
+        // ...
+      }
+      
+      return {
+        id_rol: role.id_rol,
+        nombre: role.nombre,
+        descripcion: role.descripcion || '',
+        icono_url: role.icono_url || null,
+        permisos: permisos
+      };
+    });
+    
+    // 5. DEBUG final
+    // ...
+    
+    return rolesCompletos;
+    
+  } catch (error) {
+    console.error(' ERROR en findAllRoles (seguro):', error);
+    throw new InternalServerErrorException(`Error: ${error.message}`);
   }
+}
 
   async findRoleById(id: number) {
-    const query = 'SELECT * FROM rol WHERE id_rol = ?';
-    const roles = await this.dataSource.query(query, [id]);
-    if (roles.length === 0) {
-      throw new NotFoundException(`Role with ID ${id} not found`);
+    try {
+      const query = 'SELECT * FROM rol WHERE id_rol = ?';
+      const roles = await this.dataSource.query(query, [id]);
+      if (roles.length === 0) {
+        throw new NotFoundException(`Role with ID ${id} not found`);
+      }
+      
+      // También obtener los permisos del rol
+      const permisoQuery = `
+        SELECT p.id_permiso, p.nombre, p.descripcion
+        FROM rol_permiso rp
+        JOIN permiso p ON rp.id_permiso = p.id_permiso
+        WHERE rp.id_rol = ?
+      `;
+      const permisos = await this.dataSource.query(permisoQuery, [id]);
+      
+      return {
+        ...roles[0],
+        permisos: permisos || []
+      };
+    } catch (error) {
+      console.error(` Error en findRoleById(${id}):`, error);
+      throw error;
     }
-    return roles[0];
   }
 
   async createRole(createRoleDto: CreateRoleDto, adminId: number, ip: string) {
@@ -35,10 +118,11 @@ export class AdminService {
     const query =
       'INSERT INTO rol (nombre, descripcion, icono_url) VALUES (?, ?, ?)';
     try {
+      // ...
       const result = await this.dataSource.query(query, [
         nombre,
         descripcion,
-        icono_url,
+        icono_url || null,
       ]);
       await this.logSystemEvent(
         this.dataSource.createQueryRunner(),
@@ -50,35 +134,40 @@ export class AdminService {
       );
       return { id_rol: result.insertId, ...createRoleDto };
     } catch (error) {
+      console.error(' Error en createRole:', error);
       throw new InternalServerErrorException('Could not create role', error.message);
     }
   }
 
   async deleteRole(id: number, adminId: number, ip: string) {
-    const role = await this.findRoleById(id); // Verifica si el rol existe
-    // Usamos una transacción para asegurar la consistencia
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     try {
-      await queryRunner.query('DELETE FROM rol_permiso WHERE id_rol = ?', [id]);
-      await queryRunner.query('DELETE FROM usuario_rol WHERE id_rol = ?', [id]);
-      await queryRunner.query('DELETE FROM rol WHERE id_rol = ?', [id]);
-      await this.logSystemEvent(
-        queryRunner,
-        'ELIMINAR_ROL',
-        adminId,
-        'rol',
-        `El administrador ID ${adminId} eliminó el rol '${role.nombre}' (ID: ${id}).`,
-        ip,
-      );
-      await queryRunner.commitTransaction();
-      return { message: `Role with ID ${id} deleted successfully` };
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('Could not delete role', err.message);
-    } finally {
-      await queryRunner.release();
+      const role = await this.findRoleById(id);
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        await queryRunner.query('DELETE FROM rol_permiso WHERE id_rol = ?', [id]);
+        await queryRunner.query('DELETE FROM usuario_rol WHERE id_rol = ?', [id]);
+        await queryRunner.query('DELETE FROM rol WHERE id_rol = ?', [id]);
+        await this.logSystemEvent(
+          queryRunner,
+          'ELIMINAR_ROL',
+          adminId,
+          'rol',
+          `El administrador ID ${adminId} eliminó el rol '${role.nombre}' (ID: ${id}).`,
+          ip,
+        );
+        await queryRunner.commitTransaction();
+        return { message: `Role with ID ${id} deleted successfully` };
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw new InternalServerErrorException('Could not delete role', err.message);
+      } finally {
+        await queryRunner.release();
+      }
+    } catch (error) {
+      console.error(` Error en deleteRole(${id}):`, error);
+      throw error;
     }
   }
 
@@ -86,19 +175,46 @@ export class AdminService {
     roleId: number,
     assignPermissionsDto: AssignPermissionsDto,
   ) {
-    await this.findRoleById(roleId); // Verifica si el rol existe
-    const { permissionIds } = assignPermissionsDto;
-
-    const values = permissionIds.map((permId) => [roleId, permId]);
-    const query = 'INSERT INTO rol_permiso (id_rol, id_permiso) VALUES ?';
-
     try {
-      // Primero, opcionalmente, borramos los permisos existentes para evitar duplicados
-      await this.dataSource.query('DELETE FROM rol_permiso WHERE id_rol = ?', [roleId]);
-      // Luego insertamos los nuevos
-      await this.dataSource.query(query, [values]);
-      return { message: `Permissions assigned to role ${roleId}` };
+      await this.findRoleById(roleId);
+      const { permissionIds } = assignPermissionsDto;
+
+      // Crear array de arrays para los valores
+      const values = permissionIds.map((permId) => [roleId, permId]);
+      
+      // Usar una transacción
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      
+      try {
+        // Eliminar permisos existentes
+        await queryRunner.query('DELETE FROM rol_permiso WHERE id_rol = ?', [roleId]);
+        
+        // Insertar nuevos permisos si hay
+        if (values.length > 0) {
+          // Nota: VALUES ? solo funciona con múltiples valores
+          // Para MySQL necesitamos construir la query dinámicamente
+          const placeholders = values.map(() => '(?, ?)').join(', ');
+          const flatValues = values.flat();
+          
+          const insertQuery = `INSERT INTO rol_permiso (id_rol, id_permiso) VALUES ${placeholders}`;
+          await queryRunner.query(insertQuery, flatValues);
+        }
+        
+        await queryRunner.commitTransaction();
+        // ...
+        
+        // Devolver el rol actualizado con permisos
+        return await this.findRoleById(roleId);
+      } catch (error) {
+        await queryRunner.rollbackTransaction();
+        throw error;
+      } finally {
+        await queryRunner.release();
+      }
     } catch (error) {
+      console.error(` Error en assignPermissionsToRole(${roleId}):`, error);
       throw new InternalServerErrorException('Could not assign permissions', error.message);
     }
   }
@@ -108,20 +224,33 @@ export class AdminService {
   // ==============================================================================
 
   async findAllPermissions() {
-    const query = 'SELECT * FROM permiso';
-    return this.dataSource.query(query);
+    try {
+      // ...
+      const query = 'SELECT * FROM permiso ORDER BY nombre';
+      const permissions = await this.dataSource.query(query);
+      // ...
+      return permissions;
+    } catch (error) {
+      console.error(' Error en findAllPermissions:', error);
+      throw new InternalServerErrorException('Could not get permissions', error.message);
+    }
   }
 
   async findPermissionsByRoleId(roleId: number) {
-    await this.findRoleById(roleId); // Verifica si el rol existe
-    const query = `
-      SELECT p.id_permiso, p.nombre, p.descripcion
-      FROM permiso p
-      JOIN rol_permiso rp ON p.id_permiso = rp.id_permiso
-      WHERE rp.id_rol = ?
-    `;
-    const permissions = await this.dataSource.query(query, [roleId]);
-    return permissions;
+    try {
+      await this.findRoleById(roleId);
+      const query = `
+        SELECT p.id_permiso, p.nombre, p.descripcion
+        FROM permiso p
+        JOIN rol_permiso rp ON p.id_permiso = rp.id_permiso
+        WHERE rp.id_rol = ?
+      `;
+      const permissions = await this.dataSource.query(query, [roleId]);
+      return permissions;
+    } catch (error) {
+      console.error(` Error en findPermissionsByRoleId(${roleId}):`, error);
+      throw error;
+    }
   }
 
   // ==============================================================================
@@ -129,95 +258,247 @@ export class AdminService {
   // ==============================================================================
 
   async findAllUsersWithRoles() {
+  try {
+    // ...
+    
     const query = `
       SELECT 
-        u.id_usuario, u.nombre, u.apellido, u.correo, u.fecha_registro,
-        (
-          SELECT JSON_ARRAYAGG(JSON_OBJECT('id_rol', r.id_rol, 'nombre', r.nombre))
-          FROM usuario_rol ur
-          JOIN rol r ON ur.id_rol = r.id_rol
-          WHERE ur.id_usuario = u.id_usuario
+        u.id_usuario, 
+        u.nombre, 
+        u.apellido, 
+        u.correo, 
+        u.edad,
+        u.fecha_registro,
+        u.avatar_url,
+        COALESCE(
+          (
+            SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id_rol', r.id_rol, 
+                'nombre', r.nombre,
+                'descripcion', r.descripcion,
+                'icono_url', r.icono_url
+              )
+            )
+            FROM usuario_rol ur
+            JOIN rol r ON ur.id_rol = r.id_rol
+            WHERE ur.id_usuario = u.id_usuario
+          ), 
+          JSON_ARRAY()
         ) as roles
       FROM usuario u
+      ORDER BY u.fecha_registro DESC
     `;
+    
+    // ...
+    
     const users = await this.dataSource.query(query);
-    return users.map((user) => ({
-      ...user,
-      roles: user.roles ? JSON.parse(user.roles) : [],
-    }));
+    // ...
+    
+    // Procesar de manera segura
+    const processedUsers = users.map((user) => {
+      try {
+        let rolesArray = [];
+        
+        if (user.roles) {
+          if (typeof user.roles === 'string') {
+            rolesArray = JSON.parse(user.roles);
+          } else if (Array.isArray(user.roles)) {
+            rolesArray = user.roles;
+          }
+        }
+        
+        if (user.roles === '[]') {
+          rolesArray = [];
+        }
+        
+        // ...
+        
+        return {
+          ...user,
+          roles: rolesArray
+        };
+        
+      } catch (error) {
+        console.error(` Error procesando usuario ${user.id_usuario}:`, error);
+        return {
+          ...user,
+          roles: []
+        };
+      }
+    });
+    
+    return processedUsers;
+    
+  } catch (error) {
+    console.error(' Error en findAllUsersWithRoles:', error);
+    throw new InternalServerErrorException(
+      `Error al obtener usuarios: ${error.message}`
+    );
   }
+}
 
   async findUserById(id: number) {
-    const userQuery = 'SELECT * FROM usuario WHERE id_usuario = ?';
-    const users = await this.dataSource.query(userQuery, [id]);
-    if (users.length === 0) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    try {
+      const userQuery = 'SELECT * FROM usuario WHERE id_usuario = ?';
+      const users = await this.dataSource.query(userQuery, [id]);
+      if (users.length === 0) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      return users[0];
+    } catch (error) {
+      console.error(` Error en findUserById(${id}):`, error);
+      throw error;
     }
-    return users[0];
   }
 
   async createUser(createUserDto: CreateUserDto, adminId: number, ip: string) {
-    const { nombre, apellido, edad, correo, password, avatar_url } =
-      createUserDto;
-    // Aquí deberías hashear la contraseña antes de guardarla
-    // Por simplicidad, la guardamos en texto plano, pero NO es seguro.
-    const query = `
-      INSERT INTO usuario (nombre, apellido, edad, correo, password, avatar_url, fecha_registro) 
-      VALUES (?, ?, ?, ?, ?, ?, NOW())
-    `;
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     try {
-      const result = await queryRunner.query(query, [
-        nombre,
-        apellido,
-        edad,
-        correo,
-        password,
-        avatar_url,
-      ]);
-      await this.logSystemEvent(
-        queryRunner,
-        'CREAR_USUARIO_ADMIN',
-        adminId,
-        'usuario',
-        `El administrador ID ${adminId} creó al usuario '${correo}' (ID: ${result.insertId}).`,
-        ip,
-      );
-      await queryRunner.commitTransaction();
-      return { id_usuario: result.insertId, ...createUserDto };
-    } catch (error) {
-      // Chequea si el error es por correo duplicado
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new InternalServerErrorException(
-          `User with email ${correo} already exists.`,
+      const { nombre, apellido, edad, correo, password, avatar_url, roleIds } = createUserDto;
+      // ...
+      
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      
+      try {
+        // 1. Crear el usuario
+        const createUserQuery = `
+          INSERT INTO usuario (nombre, apellido, edad, correo, password, avatar_url, fecha_registro) 
+          VALUES (?, ?, ?, ?, ?, ?, NOW())
+        `;
+        
+        const result = await queryRunner.query(createUserQuery, [
+          nombre,
+          apellido,
+          edad,
+          correo,
+          password, // IMPORTANTE: Deberías hashear esta contraseña
+          avatar_url || null,
+        ]);
+        
+        const userId = result.insertId;
+        
+        // 2. Asignar roles si se proporcionaron
+        if (roleIds && roleIds.length > 0) {
+          // Verificar que todos los roles existan
+          for (const roleId of roleIds) {
+            const roleExists = await queryRunner.query('SELECT 1 FROM rol WHERE id_rol = ?', [roleId]);
+            if (roleExists.length === 0) {
+              throw new NotFoundException(`Role with ID ${roleId} not found`);
+            }
+          }
+          
+          // Insertar relaciones usuario_rol
+          const placeholders = roleIds.map(() => '(?, ?)').join(', ');
+          const flatValues = roleIds.flatMap(roleId => [userId, roleId]);
+          
+          const insertRolesQuery = `INSERT INTO usuario_rol (id_usuario, id_rol) VALUES ${placeholders}`;
+          await queryRunner.query(insertRolesQuery, flatValues);
+          
+          // Registrar cada rol asignado
+          for (const roleId of roleIds) {
+            await this.logRoleChange(
+              queryRunner,
+              adminId,
+              userId,
+              roleId,
+              'ASIGNAR',
+              `Se asignó el rol ID ${roleId} al usuario recién creado ID ${userId}.`
+            );
+          }
+        }
+        
+        // 3. Registrar en bitácora del sistema
+        await this.logSystemEvent(
+          queryRunner,
+          'CREAR_USUARIO_ADMIN',
+          adminId,
+          'usuario',
+          `El administrador ID ${adminId} creó al usuario '${correo}' (ID: ${userId}).`,
+          ip,
         );
+        
+        await queryRunner.commitTransaction();
+        // ...
+        
+        // 4. Devolver el usuario creado con sus roles
+        const user = await this.findUserWithRolesById(userId);
+        return user;
+        
+      } catch (error) {
+        await queryRunner.rollbackTransaction();
+        
+        if (error.code === 'ER_DUP_ENTRY') {
+          throw new InternalServerErrorException(
+            `User with email ${correo} already exists.`,
+          );
+        }
+        
+        throw error;
+      } finally {
+        await queryRunner.release();
       }
-      await queryRunner.rollbackTransaction();
+    } catch (error) {
+      console.error(' Error en createUser:', error);
       throw new InternalServerErrorException(
         'Could not create user',
         error.message,
       );
+    }
+  }
+
+  // Función auxiliar para obtener usuario con roles
+  private async findUserWithRolesById(id: number, queryRunner?: QueryRunner) {
+    const runner = queryRunner || this.dataSource.createQueryRunner();
+    
+    try {
+      const userQuery = 'SELECT * FROM usuario WHERE id_usuario = ?';
+      const users = await runner.query(userQuery, [id]);
+      
+      if (users.length === 0) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      
+      const user = users[0];
+      
+      // Obtener roles del usuario
+      const rolesQuery = `
+        SELECT r.id_rol, r.nombre, r.descripcion, r.icono_url
+        FROM usuario_rol ur
+        JOIN rol r ON ur.id_rol = r.id_rol
+        WHERE ur.id_usuario = ?
+      `;
+      
+      const roles = await runner.query(rolesQuery, [id]);
+      
+      return {
+        ...user,
+        roles: roles || [],
+      };
+      
     } finally {
-      await queryRunner.release();
-    } 
+      if (!queryRunner) {
+        await runner.release();
+      }
+    }
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto) {
-    await this.findUserById(id); // Verifica si el usuario existe
-    const fields = Object.keys(updateUserDto);
-    if (fields.length === 0) {
-      return { message: 'No fields to update' };
-    }
-    const values = Object.values(updateUserDto);
-    const setClause = fields.map((field) => `${field} = ?`).join(', ');
-
-    const query = `UPDATE usuario SET ${setClause} WHERE id_usuario = ?`;
     try {
+      await this.findUserById(id);
+      const fields = Object.keys(updateUserDto);
+      if (fields.length === 0) {
+        return { message: 'No fields to update' };
+      }
+      const values = Object.values(updateUserDto);
+      const setClause = fields.map((field) => `${field} = ?`).join(', ');
+
+      const query = `UPDATE usuario SET ${setClause} WHERE id_usuario = ?`;
       await this.dataSource.query(query, [...values, id]);
       return { id_usuario: id, ...updateUserDto };
     } catch (error) {
+      console.error(` Error en updateUser(${id}):`, error);
       throw new InternalServerErrorException(
         'Could not update user',
         error.message,
@@ -226,84 +507,95 @@ export class AdminService {
   }
 
   async deleteUser(id: number, adminId: number, ip: string) {
-    const user = await this.findUserById(id); // Verifica si el usuario existe
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     try {
-      // Eliminar dependencias (ajusta según tu esquema y lógica de negocio)
-      await queryRunner.query('DELETE FROM usuario_rol WHERE id_usuario = ?', [id]);
-      // Finalmente, eliminar el usuario
-      await queryRunner.query('DELETE FROM usuario WHERE id_usuario = ?', [id]);
-      await this.logSystemEvent(
-        queryRunner,
-        'ELIMINAR_USUARIO',
-        adminId,
-        'usuario',
-        `El administrador ID ${adminId} eliminó al usuario '${user.correo}' (ID: ${id}).`,
-        ip,
-      );
-      await queryRunner.commitTransaction();
-      return { message: `User with ID ${id} deleted successfully` };
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('Could not delete user', err.message);
-    } finally {
-      await queryRunner.release();
+      const user = await this.findUserById(id);
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        await queryRunner.query('DELETE FROM usuario_rol WHERE id_usuario = ?', [id]);
+        await queryRunner.query('DELETE FROM usuario WHERE id_usuario = ?', [id]);
+        await this.logSystemEvent(
+          queryRunner,
+          'ELIMINAR_USUARIO',
+          adminId,
+          'usuario',
+          `El administrador ID ${adminId} eliminó al usuario '${user.correo}' (ID: ${id}).`,
+          ip,
+        );
+        await queryRunner.commitTransaction();
+        return { message: `User with ID ${id} deleted successfully` };
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw new InternalServerErrorException('Could not delete user', err.message);
+      } finally {
+        await queryRunner.release();
+      }
+    } catch (error) {
+      console.error(` Error en deleteUser(${id}):`, error);
+      throw error;
     }
   }
 
   async assignRolesToUser(
     userId: number,
-    adminId: number, // ID del administrador que realiza la acción
+    adminId: number,
     assignRolesDto: AssignRolesToUserDto,
   ) {
-    await this.findUserById(userId); // Verifica si el usuario existe
-    await this.findUserById(adminId); // Verifica que el admin exista
-    const { roleIds } = assignRolesDto;
-
-    // Opcional pero recomendado: Verificar que todos los roles existan.
-    for (const roleId of roleIds) {
-      await this.findRoleById(roleId);
-    }
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     try {
-      // 1. Obtener roles actuales para comparar (opcional, para un log más detallado)
-      const currentRoles = await queryRunner.query('SELECT id_rol FROM usuario_rol WHERE id_usuario = ?', [userId]);
-      const currentRoleIds = currentRoles.map(r => r.id_rol);
+      await this.findUserById(userId);
+      await this.findUserById(adminId);
+      const { roleIds } = assignRolesDto;
 
-      // 2. Eliminar roles actuales del usuario
-      await queryRunner.query('DELETE FROM usuario_rol WHERE id_usuario = ?', [userId]);
-
-      // 3. Insertar los nuevos roles y registrar en la bitácora
-      if (roleIds.length > 0) {
-        const values = roleIds.map((roleId) => [userId, roleId]);
-        await queryRunner.query('INSERT INTO usuario_rol (id_usuario, id_rol) VALUES ?', [values]);
-
-        // Registrar cada rol asignado en la bitácora
-        for (const roleId of roleIds) {
-            await this.logRoleChange(
-                queryRunner,
-                adminId,
-                userId,
-                roleId,
-                'ASIGNAR',
-                `Se asignó el rol ID ${roleId} al usuario ID ${userId}.`
-            );
-        }
+      // Verificar que todos los roles existan
+      for (const roleId of roleIds) {
+        await this.findRoleById(roleId);
       }
 
-      await queryRunner.commitTransaction();
-      return { message: `Roles for user with ID ${userId} have been updated.` };
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('Could not assign roles to user', err.message);
-    } finally {
-      await queryRunner.release();
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      try {
+        // Eliminar roles actuales del usuario
+        await queryRunner.query('DELETE FROM usuario_rol WHERE id_usuario = ?', [userId]);
+
+        // Insertar los nuevos roles si hay
+        if (roleIds.length > 0) {
+          const placeholders = roleIds.map(() => '(?, ?)').join(', ');
+          const flatValues = roleIds.flatMap(roleId => [userId, roleId]);
+          
+          const insertQuery = `INSERT INTO usuario_rol (id_usuario, id_rol) VALUES ${placeholders}`;
+          await queryRunner.query(insertQuery, flatValues);
+
+          // Registrar cada rol asignado en la bitácora
+          for (const roleId of roleIds) {
+            await this.logRoleChange(
+              queryRunner,
+              adminId,
+              userId,
+              roleId,
+              'ASIGNAR',
+              `Se asignó el rol ID ${roleId} al usuario ID ${userId}.`
+            );
+          }
+        }
+
+        await queryRunner.commitTransaction();
+        // ...
+        
+        // Devolver el usuario actualizado con roles
+        const user = await this.findUserWithRolesById(userId);
+        return user;
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+      } finally {
+        await queryRunner.release();
+      }
+    } catch (error) {
+      console.error(` Error en assignRolesToUser(${userId}):`, error);
+      throw new InternalServerErrorException('Could not assign roles to user', error.message);
     }
   }
 
@@ -316,8 +608,8 @@ export class AdminService {
     detalle: string,
   ) {
     const query = `
-        INSERT INTO bitacora_roles (id_usuario_admin, id_usuario_afectado, id_rol, accion, fecha, detalle)
-        VALUES (?, ?, ?, ?, NOW(), ?)
+      INSERT INTO bitacora_roles (id_usuario_admin, id_usuario_afectado, id_rol, accion, fecha, detalle)
+      VALUES (?, ?, ?, ?, NOW(), ?)
     `;
     try {
       await queryRunner.query(query, [
@@ -348,10 +640,6 @@ export class AdminService {
       await queryRunner.query(query, [tipo_evento, id_usuario, tabla_afectada, descripcion, direccion_ip]);
     } catch (error) {
       console.error('Error al registrar en la bitácora del sistema:', error);
-    } finally {
-        if (!queryRunner.isTransactionActive) {
-            await queryRunner.release();
-        }
     }
   }
 }

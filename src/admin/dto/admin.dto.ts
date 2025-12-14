@@ -53,6 +53,11 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   avatar_url?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsInt({ each: true })
+  roleIds?: number[]; 
 }
 
 export class UpdateUserDto {
