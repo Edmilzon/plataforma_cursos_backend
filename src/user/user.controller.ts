@@ -1,6 +1,6 @@
-import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus, Ip } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus, Ip, Put } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserDto, UserRole} from './dto/user.dto';
+import { UserDto, UserRole, UpdateUserProfileDto } from './dto/user.dto';
 import{LoginUserDto} from './dto/login-user.dto';
 import { User } from './interfaces/user.interface';
 
@@ -41,8 +41,23 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+<<<<<<< HEAD
   @Get(':id/saldo-punto')
   getSaldoPunto(@Param('id', ParseIntPipe) id: number): Promise<{ saldo_punto: number }> {
     return this.userService.getSaldoPunto(id);
+=======
+  @Put(':id/profile')
+  @HttpCode(HttpStatus.OK)
+  updateProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+    @Ip() ip: string,
+  ): Promise<Omit<User, 'password'>> {
+    // Por ahora, permitimos que el usuario actualice su propio perfil
+    // Pasamos el mismo ID como currentUserId
+    const currentUserId = id;
+    
+    return this.userService.updateUserProfile(id, updateUserProfileDto, ip, currentUserId);
+>>>>>>> origin/feature/perfil-insignias-permisos
   }
 }

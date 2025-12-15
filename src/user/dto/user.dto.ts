@@ -7,7 +7,6 @@ export enum UserRole {
 }
 
 export class UserDto {
-
     @IsString()
     @IsNotEmpty()
     nombre: string;
@@ -36,4 +35,25 @@ export class UserDto {
     @IsOptional()
     @IsEnum(UserRole)
     rol?: UserRole;
+}
+
+export class UpdateUserProfileDto {
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    nombre?: string;
+    
+    @IsOptional()
+    @IsString() 
+    @IsNotEmpty()
+    apellido?: string;
+    
+    @IsOptional()
+    @IsNumber()
+    edad?: number;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(4)  
+    password?: string;
 }
