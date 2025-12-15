@@ -1,5 +1,6 @@
 import {
   IsString,
+  IsBoolean,
   IsNotEmpty,
   IsOptional,
   IsNumber,
@@ -15,6 +16,7 @@ export class CreateLeccionDto {
   @IsOptional() @IsString() url_recurso?: string;
   @IsOptional() @IsNumber() orden?: number;
   @IsNumber() id_modulo: number;
+  @IsOptional() @IsBoolean() es_trabajo_final?: boolean;
 }
 
 export class UpdateLeccionDto {
