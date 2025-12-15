@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, QueryRunner } from 'typeorm';
-import { CanjearRecompensaDto } from './dto/recompensa.dto';
+import {
+  CanjearRecompensaDto,
+  CreateRecompensaDto,
+  UpdateRecompensaDto,
+} from './dto/recompensa.dto';
 
 @Injectable()
 export class RecompensaService {
@@ -14,8 +18,39 @@ export class RecompensaService {
     private readonly dataSource: DataSource,
   ) {}
 
+  async create(createRecompensaDto: CreateRecompensaDto) {
+    const {
+      nombre,
+      descripcion,
+      tipo,
+      puntos_requeridos,
+      cantidad_disponible,
+      estado,
+      imagen_url,
+    } = createRecompensaDto;
+    const query = `
+      INSERT INTO recompensa (nombre, descripcion, tipo, puntos_requeridos, cantidad_disponible, estado, imagen_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?);
+    `;
+    try {
+      const result = await this.dataSource.query(query, [
+        nombre,
+        descripcion,
+        tipo,
+        puntos_requeridos,
+        cantidad_disponible,
+        estado,
+        imagen_url,
+      ]);
+      return { id_recompensa: result.insertId, ...createRecompensaDto };
+    } catch (error) {
+      throw new BadRequestException(`Error al crear la recompensa: ${error.message}`);
+    }
+  }
+
   async findAll() {
-    const query = `SELECT * FROM recompensa WHERE estado = 'Activo' AND cantidad_disponible > 0;`;
+    // Vista para administradores, trae todo
+    const query = `SELECT * FROM recompensa;`;
     return this.dataSource.query(query);
   }
 
@@ -110,6 +145,60 @@ export class RecompensaService {
       if (!queryRunner.isTransactionActive) {
         await queryRunner.release();
       }
+    }
+  }
+
+  async findAllActive() {
+    // Vista para usuarios, solo recompensas canjeables
+    const query = `SELECT * FROM recompensa WHERE estado = 'Activo' AND cantidad_disponible > 0;`;
+    return this.dataSource.query(query);
+  }
+
+  async findOne(id: number) {
+    const recompensa = await this.dataSource.query(
+      'SELECT * FROM recompensa WHERE id_recompensa = ?',
+      [id],
+    );
+    if (recompensa.length === 0) {
+      throw new NotFoundException(`Recompensa con ID ${id} no encontrada.`);
+    }
+    return recompensa[0];
+  }
+
+  async update(id: number, updateRecompensaDto: UpdateRecompensaDto) {
+    const fields = Object.keys(updateRecompensaDto);
+    if (fields.length === 0) {
+      throw new BadRequestException('No se proporcionaron datos para actualizar.');
+    }
+
+    const setClause = fields.map((field) => `${field} = ?`).join(', ');
+    const values = fields.map((field) => updateRecompensaDto[field]);
+
+    const query = `UPDATE recompensa SET ${setClause} WHERE id_recompensa = ?`;
+
+    try {
+      const result = await this.dataSource.query(query, [...values, id]);
+      if (result.affectedRows === 0) {
+        throw new NotFoundException(`Recompensa con ID ${id} no encontrada.`);
+      }
+      return this.findOne(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new BadRequestException(`Error al actualizar la recompensa: ${error.message}`);
+    }
+  }
+
+  async remove(id: number) {
+    // Soft delete
+    const query = `UPDATE recompensa SET estado = 'Inactivo' WHERE id_recompensa = ?`;
+    try {
+      const result = await this.dataSource.query(query, [id]);
+      if (result.affectedRows === 0) {
+        throw new NotFoundException(`Recompensa con ID ${id} no encontrada.`);
+      }
+      return { message: `Recompensa con ID ${id} ha sido desactivada.` };
+    } catch (error) {
+      throw new BadRequestException(`Error al desactivar la recompensa: ${error.message}`);
     }
   }
 }

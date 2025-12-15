@@ -118,16 +118,6 @@
         FOREIGN KEY (id_curso) REFERENCES curso(id_curso)
     );
 
-    CREATE TABLE foro (
-        id_foro INT AUTO_INCREMENT PRIMARY KEY,
-        titulo VARCHAR(150),
-        descripcion TEXT,
-        fecha_creacion DATETIME,
-        icono_url VARCHAR(255) NULL DEFAULT NULL,
-        id_curso INT,
-        FOREIGN KEY (id_curso) REFERENCES curso(id_curso)
-    );
-
     CREATE TABLE inscripcion (
         id_inscripcion INT AUTO_INCREMENT PRIMARY KEY,
         fecha_inscripcion DATETIME,

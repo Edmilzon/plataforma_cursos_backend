@@ -1,7 +1,36 @@
 @baseUrl = http://localhost:5000
 
-### Obtener todas las recompensas disponibles
+### Obtener todas las recompensas (para Admin)
 GET {{baseUrl}}/recompensas
+
+### Obtener recompensas disponibles (para Usuario)
+GET {{baseUrl}}/recompensas/disponibles
+
+### Obtener una recompensa por ID
+GET {{baseUrl}}/recompensas/2
+
+### Crear una nueva recompensa
+POST {{baseUrl}}/recompensas
+Content-Type: application/json
+
+{
+  "nombre": "Libro de Programación Avanzada",
+  "descripcion": "Un libro completo sobre patrones de diseño y arquitectura.",
+  "tipo": "Físico",
+  "puntos_requeridos": 1500,
+  "cantidad_disponible": 10,
+  "estado": "Activo",
+  "imagen_url": "/img/recompensas/libro_prog.png"
+}
+
+### Actualizar una recompensa (parcial)
+PATCH {{baseUrl}}/recompensas/6
+Content-Type: application/json
+
+{
+  "puntos_requeridos": 1400,
+  "cantidad_disponible": 8
+}
 
 ### Canjear una recompensa
 # @name canjearRecompensa
@@ -11,3 +40,6 @@ Content-Type: application/json
 {
   "id_usuario": 5
 }
+
+### Desactivar (soft delete) una recompensa
+DELETE {{baseUrl}}/recompensas/6
