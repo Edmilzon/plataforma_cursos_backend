@@ -19,6 +19,11 @@ export class RecompensaController {
     return this.recompensaService.findAll();
   }
 
+  @Get('usuario/:id')
+  async findRedeemedByUser(@Param('id', ParseIntPipe) id: number) {
+    return this.recompensaService.findRedeemedByUser(id);
+  }
+
   @Post(':id/canjear')
   @HttpCode(200)
   async canjear(
