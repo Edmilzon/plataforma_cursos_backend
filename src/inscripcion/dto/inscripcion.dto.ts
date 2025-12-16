@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateInscripcionDto {
   @IsNumber()
@@ -15,6 +15,5 @@ export class CreateInscripcionDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
-  puntos_utilizados?: number;
+  id_canje_recompensa?: number; // Solo para aplicar descuento de recompensa
 }

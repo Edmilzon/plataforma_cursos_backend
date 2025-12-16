@@ -12,6 +12,11 @@ export class InscripcionController {
     return this.inscripcionService.create(createInscripcionDto);
   }
 
+  @Get('descuentos-disponibles/:id')
+  getDescuentosDisponibles(@Param('id', ParseIntPipe) id: number) {
+    return this.inscripcionService.getDescuentosDisponibles(id);
+  }
+
   @Get('estudiante/:id')
   findAllByStudent(@Param('id', ParseIntPipe) id: number) {
     return this.inscripcionService.findAllByStudent(id);
