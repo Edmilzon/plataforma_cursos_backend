@@ -41,11 +41,11 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-<<<<<<< HEAD
   @Get(':id/saldo-punto')
   getSaldoPunto(@Param('id', ParseIntPipe) id: number): Promise<{ saldo_punto: number }> {
     return this.userService.getSaldoPunto(id);
-=======
+  }
+
   @Put(':id/profile')
   @HttpCode(HttpStatus.OK)
   updateProfile(
@@ -58,6 +58,5 @@ export class UserController {
     const currentUserId = id;
     
     return this.userService.updateUserProfile(id, updateUserProfileDto, ip, currentUserId);
->>>>>>> origin/feature/perfil-insignias-permisos
   }
 }

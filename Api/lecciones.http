@@ -1,0 +1,77 @@
+@baseUrl = http://localhost:5000
+
+### 1. Crear una lección para un módulo
+# @name createLeccion
+# Reemplaza :cursoId y :moduloId con los IDs correspondientes
+POST {{baseUrl}}/cursos/1/modulos/1/lecciones
+Content-Type: application/json
+
+{
+  "titulo": "Introducción a los Controladores",
+  "contenido": "En esta lección aprenderemos sobre los controladores en NestJS...",
+  "url_recurso": "http://example.com/video1.mp4",
+  "orden": 1
+}
+
+### 2. Obtener lecciones de un módulo
+# @name getLeccionesByModulo
+# Reemplaza :cursoId y :moduloId con los IDs correspondientes
+GET {{baseUrl}}/cursos/1/modulos/1/lecciones
+
+### 3. Obtener una lección por ID
+# @name getLeccionById
+GET {{baseUrl}}/lecciones/1
+
+### 4. Actualizar una lección
+# @name updateLeccion
+PATCH {{baseUrl}}/lecciones/1
+Content-Type: application/json
+
+{
+  "titulo": "Controladores y Rutas Avanzadas",
+  "orden": 2
+}
+
+### 5. Eliminar una lección
+# @name deleteLeccion
+DELETE {{baseUrl}}/lecciones/1
+
+---
+## Tareas (anidadas en Lecciones)
+
+### 1. Crear una tarea para una lección
+# @name createTarea
+POST {{baseUrl}}/lecciones/1/tareas
+Content-Type: application/json
+
+{
+  "titulo": "Ejercicio Práctico de Controladores",
+  "descripcion": "Crear un CRUD básico para la entidad 'producto'.",
+  "url_contenido": "http://example.com/ejercicio.pdf",
+  "fecha_entrega": "2024-09-15"
+}
+
+### 2. Obtener todas las tareas de una lección
+# @name getTareasByLeccion
+GET {{baseUrl}}/lecciones/1/tareas
+
+---
+## Evaluaciones (anidadas en Lecciones)
+
+### 1. Crear una evaluación para una lección
+# @name createEvaluacion
+POST {{baseUrl}}/lecciones/1/evaluaciones
+Content-Type: application/json
+
+{
+  "titulo": "Examen Parcial 1",
+  "descripcion": "Evaluación de los conceptos de Módulos y Controladores.",
+  "tipo": "Cuestionario",
+  "fecha_hora_inicio": "2024-09-20T10:00:00Z",
+  "fecha_hora_entrega": "2024-09-20T11:00:00Z",
+  "calificacion_maxima": 100
+}
+
+### 2. Obtener todas las evaluaciones de una lección
+# @name getEvaluacionesByLeccion
+GET {{baseUrl}}/lecciones/1/evaluaciones

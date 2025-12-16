@@ -69,6 +69,27 @@ export class CursosService {
     return result[0];
   }
 
+  async findAllByDocente(docenteId: number): Promise<Curso[]> {
+    const query = `
+      SELECT
+        c.id_curso,
+        c.titulo,
+        c.descripcion,
+        c.fecha_inicio,
+        c.fecha_fin,
+        c.duracion,
+        c.precio,
+        c.modalidad,
+        JSON_OBJECT('id_usuario', u.id_usuario, 'nombre', u.nombre, 'apellido', u.apellido) as docente,
+        JSON_OBJECT('id_tipo_curso', tc.id_tipo_curso, 'nombre', tc.nombre) as tipo_curso
+      FROM curso c
+      JOIN usuario u ON c.id_docente = u.id_usuario
+      JOIN tipo_curso tc ON c.id_tipo_curso = tc.id_tipo_curso
+      WHERE c.id_docente = ?;
+    `;
+    return this.dataSource.query(query, [docenteId]);
+  }
+
   async create(cursoData: CreateCursoDto): Promise<any> {
     const fields = [
       'titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'duracion', 

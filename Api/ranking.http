@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:5000/ranking
+
+### 1. Ranking de mejores estudiantes
+# @name getStudentRanking
+# Opcional: ?limit=5
+GET {{baseUrl}}/students
+
+### 2. Ranking de cursos por valoración
+# @name getCourseRatingRanking
+# Opcional: ?limit=5
+GET {{baseUrl}}/courses/rating
+
+### 3. Ranking de cursos por popularidad
+# @name getCoursePopularityRanking
+# Opcional: ?limit=5
+GET {{baseUrl}}/courses/popularity

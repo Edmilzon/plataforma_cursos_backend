@@ -1,4 +1,42 @@
 @baseUrl = http://localhost:5000/user
+
+### 1. Registrar un nuevo usuario
+# @name registerUser
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "correo": "juan.perez@example.com",
+  "password": "password123",
+  "edad": 25,
+  "avatar_url": "http://example.com/avatar.jpg",
+  "rol": "Estudiante"
+}
+
+### 2. Iniciar sesión
+# @name loginUser
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "correo": "juan.perez@example.com",
+  "password": "password123"
+}
+
+### 3. Obtener todos los usuarios
+# @name getAllUsers
+GET {{baseUrl}}
+
+### 4. Obtener usuarios por rol
+# @name getUsersByRole
+GET {{baseUrl}}/rol?rol=Estudiante
+
+### 5. Obtener un usuario por ID
+# @name getUserById
+GET {{baseUrl}}/1
+
 ### Obtener saldo de puntos de un usuario por ID
 # Reemplaza el 1 con el ID del usuario
 GET {{baseUrl}}/1/saldo-punto

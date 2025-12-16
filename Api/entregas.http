@@ -1,5 +1,31 @@
 @baseUrl = http://localhost:5000/entregas
 
+### 1. Crear una nueva entrega (Tarea)
+# @name createTareaEntrega
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "id_usuario": 1,
+  "id_tarea": 5,
+  "url_archivo": "https://example.com/path/to/mi_tarea.pdf"
+}
+
+### 2. Crear una nueva entrega (Evaluación)
+# @name createEvaluacionEntrega
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "id_usuario": 1,
+  "id_evaluacion": 3
+}
+
+### 3. Obtener el progreso de una lección
+# @name getLeccionProgreso
+# Reemplaza :id_usuario y :id_leccion con los IDs correspondientes
+GET {{baseUrl}}/progreso/1/12
+
 ### Calificar una entrega (Tarea o Evaluación)
 # Reemplaza el :id con el ID de la entrega_actividad que quieres calificar.
 # El ID de la entrega se obtiene cuando un estudiante realiza una entrega.

@@ -1,0 +1,83 @@
+@baseUrl = http://localhost:5000/cursos
+
+### 1. Crear un nuevo curso
+# @name createCurso
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "titulo": "Curso de NestJS desde Cero",
+  "descripcion": "Aprende a construir APIs robustas con NestJS.",
+  "fecha_inicio": "2024-08-01",
+  "fecha_fin": "2024-09-01",
+  "duracion": 40,
+  "precio": 99.99,
+  "modalidad": "Online",
+  "id_docente": 2,
+  "id_tipo_curso": 1,
+  "cupo": 50,
+  "imagen_portada_url": "http://example.com/curso-nestjs.png"
+}
+
+### 2. Obtener todos los cursos
+# @name getAllCursos
+GET {{baseUrl}}
+
+### 3. Obtener un curso por ID
+# @name getCursoById
+GET {{baseUrl}}/1
+
+### 4. Actualizar un curso
+# @name updateCurso
+PATCH {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "precio": 89.99,
+  "modalidad": "Híbrida"
+}
+
+### 5. Eliminar un curso
+# @name deleteCurso
+DELETE {{baseUrl}}/1
+
+---
+## Módulos (dentro de un curso)
+
+### Crear un módulo para un curso
+# @name createModulo
+POST {{baseUrl}}/1/modulos
+Content-Type: application/json
+
+{
+  "nombre": "Introducción a NestJS",
+  "descripcion": "Conceptos básicos y estructura del proyecto.",
+  "orden": 1
+}
+
+### Obtener todos los módulos de un curso
+# @name getModulosByCurso
+GET {{baseUrl}}/1/modulos
+
+---
+## Horarios (dentro de un curso)
+
+### Crear un horario para un curso
+# @name createHorario
+POST {{baseUrl}}/1/horarios
+Content-Type: application/json
+
+{
+  "dia_semana": "Lunes",
+  "hora_inicio": "19:00:00",
+  "hora_fin": "21:00:00"
+}
+
+### Obtener todos los horarios de un curso
+# @name getHorariosByCurso
+GET {{baseUrl}}/1/horarios
+
+---
+### Obtener todos los cursos de un docente
+# @name getCursosByDocente
+GET {{baseUrl}}/docente/2

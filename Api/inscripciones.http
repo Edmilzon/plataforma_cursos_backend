@@ -1,0 +1,18 @@
+@baseUrl = http://localhost:5000/inscripciones
+
+### 1. Crear una nueva inscripción
+# @name createInscripcion
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "id_curso": 1,
+  "id_estudiante": 1,
+  "metodo_pago": "Tarjeta de Crédito",
+  "puntos_utilizados": 50
+}
+
+### 2. Obtener todas las inscripciones de un estudiante
+# @name getInscripcionesByEstudiante
+# Reemplaza :id con el ID del estudiante
+GET {{baseUrl}}/estudiante/1

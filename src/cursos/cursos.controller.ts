@@ -40,6 +40,11 @@ export class CursosController {
     return this.cursosService.findOne(id);
   }
 
+  @Get('docente/:docenteId')
+  async findAllByDocente(@Param('docenteId', ParseIntPipe) docenteId: number) {
+    return this.cursosService.findAllByDocente(docenteId);
+  }
+
   @Post()
   async create(@Body() createCursoDto: CreateCursoDto) {
     return this.cursosService.create(createCursoDto);
