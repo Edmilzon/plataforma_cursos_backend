@@ -8,7 +8,9 @@ import {
   Delete,
   ParseIntPipe,
   HttpCode,
+  Query,
 } from '@nestjs/common';
+import { EntregasService } from '../entregas/entregas.service';
 import { LeccionesService } from './lecciones.service';
 import {
   CreateLeccionDto,
@@ -21,12 +23,17 @@ import {
 
 @Controller('lecciones')
 export class LeccionesController {
-  constructor(private readonly leccionesService: LeccionesService) {}
+  constructor(
+    private readonly leccionesService: LeccionesService,
+    private readonly entregasService: EntregasService // FALTA ESTO
+  ) {}
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.leccionesService.findOne(id);
   }
+
+  
 
   @Patch(':id')
   update(
@@ -62,6 +69,14 @@ export class LeccionesController {
     @Body() updateTareaDto: UpdateTareaDto,
   ) {
     return this.leccionesService.updateTarea(id, updateTareaDto);
+  }
+
+  @Get('certificado/validar')
+  async validarCertificado(
+    @Query('usuario') idUsuario: number,
+    @Query('curso') idCurso: number,
+  ) {
+    return this.entregasService.obtenerCertificado(idUsuario, idCurso);
   }
 
   @Delete('tareas/:id')

@@ -8,6 +8,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { EntregasService } from './entregas.service';
 import { CalificarEntregaDto, CreateEntregaDto } from './dto/entrega.dto';
@@ -67,5 +68,19 @@ export class EntregasController {
   return this.entregasService.getDeliveriesByTask(Number(idTarea));
   }
 
+<<<<<<< HEAD
 >>>>>>> origin/ajustes-pago
+=======
+  @Get('certificado/validar')
+  async validarCertificado(
+    @Query('usuario') idUsuario: number,
+    @Query('curso') idCurso: number,
+  ) {
+    // Nota: Los parámetros de @Query suelen llegar como strings.
+    // Si tu base de datos es MySQL, esto suele funcionar directo.
+    // Si necesitas convertirlos estrictamente, usa: @Query('usuario', ParseIntPipe)
+    return this.entregasService.obtenerCertificado(idUsuario, idCurso);
+  }
+
+>>>>>>> origin/archivos-agregados-a-backend
 }

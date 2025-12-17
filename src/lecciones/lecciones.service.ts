@@ -67,9 +67,15 @@ export class LeccionesService {
 
   async createTarea(createTareaDto: CreateTareaDto) {
     await this.findOne(createTareaDto.id_leccion); // Verifica que la lección exista
+    const MARCA_FINAL = '';
+    let descripcionFinal = createTareaDto.descripcion;
+    if (createTareaDto.es_trabajo_final) {
+        descripcionFinal = `${descripcionFinal} ${MARCA_FINAL}`;
+    }
     const query = `INSERT INTO tarea (titulo, descripcion, url_contenido, fecha_entrega, id_leccion) VALUES (?, ?, ?, ?, ?)`;
     const result = await this.dataSource.query(query, [
       createTareaDto.titulo,
+      descripcionFinal,
       createTareaDto.descripcion,
       createTareaDto.url_contenido,
       createTareaDto.fecha_entrega,
