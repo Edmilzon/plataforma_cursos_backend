@@ -78,6 +78,6 @@ Content-Type: application/json
 GET {{baseUrl}}/1/horarios
 
 ---
-### Obtener todos los cursos de un docente
-# @name getCursosByDocente
-GET {{baseUrl}}/docente/2
+  ### Obtener todos los cursos de un docente
+  # @name getCursosByDocente
+  GET {{baseUrl}}/docente/7

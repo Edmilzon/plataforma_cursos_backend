@@ -37,4 +37,27 @@ export class EntregasController {
   ) {
     return this.entregasService.calificar(id, calificarEntregaDto);
   }
+
+  @Get('curso/:id_curso')
+  findAllByCurso(
+    @Param('id_curso', ParseIntPipe) id_curso: number,
+  ) {
+    return this.entregasService.findAllByCurso(id_curso);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.entregasService.findOne(id);
+  }
+
+  @Get('usuario/:id_usuario/curso/:id_curso')
+  findAllByUsuarioAndCurso(
+    @Param('id_usuario', ParseIntPipe) id_usuario: number,
+    @Param('id_curso', ParseIntPipe) id_curso: number,
+  ) {
+    return this.entregasService.findAllByUsuarioAndCurso(
+      id_usuario,
+      id_curso,
+    );
+  }
 }

@@ -159,13 +159,95 @@ export class EntregasService {
     id: number,
     calificarEntregaDto: CalificarEntregaDto,
   ): Promise<any> {
-    await this.findOne(id); // Verifica que la entrega exista
+    const entrega = await this.findOne(id); // Verifica que la entrega exista y la obtiene
     const { calificacion } = calificarEntregaDto;
 
     const query =
       "UPDATE entrega_actividad SET calificacion = ?, estado = 'Calificado' WHERE id_entrega = ?";
     await this.dataSource.query(query, [calificacion, id]);
 
-    return this.findOne(id);
+    // Devuelve el objeto que ya teníamos, pero con la calificación y estado actualizados.
+    // Así evitamos una segunda consulta a la base de datos.
+    return {
+      ...entrega,
+      calificacion,
+      estado: 'Calificado',
+    };
+  }
+
+  async findAllByCurso(id_curso: number): Promise<any[]> {
+    // Primero, verificamos si el curso existe para dar un error claro.
+    const curso = await this.dataSource.query('SELECT id_curso FROM curso WHERE id_curso = ?', [id_curso]);
+    if (curso.length === 0) {
+      throw new NotFoundException(`El curso con ID ${id_curso} no fue encontrado.`);
+    }
+
+    const query = `
+      SELECT
+          ea.id_entrega,
+          ea.id_usuario,
+          u.nombre AS nombre_usuario,
+          u.apellido AS apellido_usuario,
+          l.id_leccion,
+          l.titulo AS titulo_leccion,
+          COALESCE(t.id_tarea, ev.id_evaluacion) AS id_actividad,
+          COALESCE(t.titulo, ev.titulo) AS titulo_actividad,
+          IF(t.id_tarea IS NOT NULL, 'Tarea', 'Evaluacion') AS tipo_actividad,
+          ea.calificacion,
+          ea.url_archivo,
+          ea.fecha_entrega,
+          ea.estado
+      FROM entrega_actividad ea
+      JOIN usuario u ON ea.id_usuario = u.id_usuario
+      LEFT JOIN tarea t ON ea.id_tarea = t.id_tarea
+      LEFT JOIN evaluacion ev ON ea.id_evaluacion = ev.id_evaluacion
+      -- Usamos COALESCE para obtener el id_leccion de la tabla que no sea nula
+      JOIN leccion l ON l.id_leccion = COALESCE(t.id_leccion, ev.id_leccion)
+      JOIN modulo m ON l.id_modulo = m.id_modulo
+      WHERE m.id_curso = ?
+      ORDER BY ea.fecha_entrega DESC;
+    `;
+
+    return this.dataSource.query(query, [id_curso]);
+  }
+
+  async findAllByUsuarioAndCurso(
+    id_usuario: number,
+    id_curso: number,
+  ): Promise<any[]> {
+    // Verificamos que el usuario y el curso existan
+    const usuario = await this.dataSource.query('SELECT id_usuario FROM usuario WHERE id_usuario = ?', [id_usuario]);
+    if (usuario.length === 0) {
+      throw new NotFoundException(`El usuario con ID ${id_usuario} no fue encontrado.`);
+    }
+    const curso = await this.dataSource.query('SELECT id_curso FROM curso WHERE id_curso = ?', [id_curso]);
+    if (curso.length === 0) {
+      throw new NotFoundException(`El curso con ID ${id_curso} no fue encontrado.`);
+    }
+
+    const query = `
+      SELECT
+          ea.id_entrega,
+          l.id_leccion,
+          l.titulo AS titulo_leccion,
+          m.nombre AS nombre_modulo,
+          COALESCE(t.id_tarea, ev.id_evaluacion) AS id_actividad,
+          COALESCE(t.titulo, ev.titulo) AS titulo_actividad,
+          IF(t.id_tarea IS NOT NULL, 'Tarea', 'Evaluacion') AS tipo_actividad,
+          ea.calificacion,
+          ea.url_archivo,
+          ea.fecha_entrega,
+          ea.estado
+      FROM entrega_actividad ea
+      JOIN usuario u ON ea.id_usuario = u.id_usuario
+      LEFT JOIN tarea t ON ea.id_tarea = t.id_tarea
+      LEFT JOIN evaluacion ev ON ea.id_evaluacion = ev.id_evaluacion
+      JOIN leccion l ON l.id_leccion = COALESCE(t.id_leccion, ev.id_leccion)
+      JOIN modulo m ON l.id_modulo = m.id_modulo
+      WHERE m.id_curso = ? AND ea.id_usuario = ?
+      ORDER BY m.orden, l.orden;
+    `;
+
+    return this.dataSource.query(query, [id_curso, id_usuario]);
   }
 }
