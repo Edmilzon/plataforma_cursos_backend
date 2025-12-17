@@ -71,4 +71,29 @@ export class RankingService {
         }
         return courses;
     }
+
+      async getStudentRanking(limit: number = 10) {
+    const query = `
+      SELECT
+          u.id_usuario,
+          CONCAT(u.nombre, ' ', u.apellido) AS nombre_completo,
+          u.avatar_url,
+          u.saldo_punto AS puntos,
+          (SELECT COUNT(*) FROM certificado c WHERE c.id_usuario = u.id_usuario) AS certificados_obtenidos,
+          (SELECT COUNT(*) FROM progreso_leccion pl WHERE pl.id_usuario = u.id_usuario AND pl.completado = TRUE) AS lecciones_completadas,
+          ROW_NUMBER() OVER (ORDER BY u.saldo_punto DESC) as posicion
+      FROM 
+          usuario u
+      JOIN 
+          usuario_rol ur ON u.id_usuario = ur.id_usuario
+      JOIN 
+          rol r ON ur.id_rol = r.id_rol
+      WHERE 
+          r.nombre = 'Estudiante'
+      GROUP BY u.id_usuario
+      ORDER BY puntos DESC, u.id_usuario
+      LIMIT ?
+    `;
+    return this.dataSource.query(query, [limit]);
+  }
 }

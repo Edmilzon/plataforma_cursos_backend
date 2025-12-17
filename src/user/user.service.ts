@@ -364,4 +364,45 @@ export class UserService{
             await queryRunner.release();
         }
     }
+
+    async getReporteActividadNuevosUsuarios(dias: number) {
+    const query = `
+      SELECT
+          u.id_usuario,
+          CONCAT(u.nombre, ' ', u.apellido) AS nombre_completo,
+          u.correo,
+          u.fecha_registro,
+          u.saldo_punto,
+          (
+              SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                      'id_curso', c.id_curso,
+                      'titulo', c.titulo,
+                      'fecha_inscripcion', i.fecha_inscripcion
+                  )
+              )
+              FROM inscripcion i
+              JOIN curso c ON i.id_curso = c.id_curso
+              WHERE i.id_estudiante = u.id_usuario
+          ) AS cursos_inscritos,
+          (
+              SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                      'id_recompensa', r.id_recompensa,
+                      'nombre', r.nombre,
+                      'fecha_canje', cr.fecha_canje
+                  )
+              )
+              FROM canje_recompensa cr
+              JOIN recompensa r ON cr.id_recompensa = r.id_recompensa
+              WHERE cr.id_usuario = u.id_usuario
+          ) AS recompensas_canjeadas
+      FROM usuario u
+      WHERE u.fecha_registro >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      ORDER BY u.fecha_registro DESC;
+    `;
+
+    const reporte = await this.dataSource.query(query, [dias]);
+    return reporte;
+  }
 }

@@ -4,3 +4,8 @@
 # Reemplaza el '1' con el ID del usuario que quieres consultar.
 GET {{api_url}}/insignias/usuario/1
 Accept: application/json
+
+---
+### Reporte de insignias otorgadas (General y por estudiante)
+# @name getReporteInsignias
+GET {{api_url}}/insignias/reportes/otorgadas

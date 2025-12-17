@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus, Ip, Put } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Post, Body, HttpCode, HttpStatus, Ip, Put, DefaultValuePipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto, UserRole, UpdateUserProfileDto } from './dto/user.dto';
 import{LoginUserDto} from './dto/login-user.dto';
@@ -58,5 +58,12 @@ export class UserController {
     const currentUserId = id;
     
     return this.userService.updateUserProfile(id, updateUserProfileDto, ip, currentUserId);
+  }
+
+  @Get('reportes/actividad-nuevos-usuarios')
+  getReporteActividadNuevosUsuarios(
+    @Query('dias', new DefaultValuePipe(30), ParseIntPipe) dias: number,
+  ) {
+    return this.userService.getReporteActividadNuevosUsuarios(dias);
   }
 }

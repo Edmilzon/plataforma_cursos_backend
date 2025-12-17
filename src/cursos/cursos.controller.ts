@@ -150,4 +150,29 @@ export class CursosController {
   async getReporteEstadoEstudiantes() {
     return this.cursosService.getReporteEstadoEstudiantes();
   }
+
+  @Get('reportes/promedio-notas-estudiantes')
+  async getReportePromedioNotas() {
+    return this.cursosService.getReportePromedioNotas();
+  }
+
+  @Get('reportes/completados-certificaciones')
+  async getReporteCursosCompletados() {
+    return this.cursosService.getReporteCursosCompletados();
+  }
+
+  @Get('reportes/estudiantes-activos')
+  async getReporteEstudiantesActivos() {
+    return this.cursosService.getReporteEstudiantesActivos();
+  }
+
+  @Get('reportes/cursos-por-docente')
+  async getReporteCursosPorDocente() {
+    return this.cursosService.getReporteCursosPorDocente();
+  }
+
+  @Get('reportes/horarios-sesiones')
+  async getReporteHorariosSesiones() {
+    return this.cursosService.getReporteHorariosSesiones();
+  }
 }

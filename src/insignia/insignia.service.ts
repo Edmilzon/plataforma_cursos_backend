@@ -202,4 +202,31 @@ export class InsigniaService {
       fecha_otorgacion: new Date()
     };
   }
+
+  /**
+   * REPORTE - Obtener el número de insignias otorgadas en general y por estudiante.
+   */
+  async getReporteInsigniasOtorgadas(): Promise<any> {
+    const totalQuery = `SELECT COUNT(*) as total FROM usuario_insignia`;
+    const totalResult = await this.dataSource.query(totalQuery);
+    const totalInsigniasOtorgadas = parseInt(totalResult[0].total, 10) || 0;
+
+    const detalleQuery = `
+      SELECT
+          u.id_usuario,
+          CONCAT(u.nombre, ' ', u.apellido) AS nombre_completo,
+          u.avatar_url,
+          COUNT(ui.id_usuario_insignia) AS insignias_obtenidas
+      FROM usuario u
+      LEFT JOIN usuario_insignia ui ON u.id_usuario = ui.id_usuario
+      JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
+      JOIN rol r ON ur.id_rol = r.id_rol
+      WHERE r.nombre = 'Estudiante'
+      GROUP BY u.id_usuario
+      ORDER BY insignias_obtenidas DESC, nombre_completo ASC;
+    `;
+    const detallePorEstudiante = await this.dataSource.query(detalleQuery);
+
+    return { total_insignias_otorgadas: totalInsigniasOtorgadas, detalle_por_estudiante: detallePorEstudiante };
+  }
 }

@@ -322,4 +322,126 @@ export class CursosService {
     const reporte = await this.dataSource.query(query);
     return reporte;
   }
+
+  async getReportePromedioNotas() {
+    const query = `
+      SELECT
+          c.id_curso,
+          c.titulo AS curso_titulo,
+          u.id_usuario AS id_estudiante,
+          CONCAT(u.nombre, ' ', u.apellido) AS estudiante_nombre_completo,
+          AVG(ea.calificacion) AS promedio_calificacion
+      FROM entrega_actividad ea
+      JOIN usuario u ON ea.id_usuario = u.id_usuario
+      LEFT JOIN tarea t ON ea.id_tarea = t.id_tarea
+      LEFT JOIN evaluacion ev ON ea.id_evaluacion = ev.id_evaluacion
+      JOIN leccion l ON l.id_leccion = COALESCE(t.id_leccion, ev.id_leccion)
+      JOIN modulo m ON l.id_modulo = m.id_modulo
+      JOIN curso c ON m.id_curso = c.id_curso
+      WHERE ea.calificacion IS NOT NULL
+      GROUP BY c.id_curso, u.id_usuario
+      ORDER BY c.titulo, estudiante_nombre_completo;
+    `;
+    const reporte = await this.dataSource.query(query);
+    return reporte;
+  }
+
+  async getReporteCursosCompletados() {
+    const query = `
+      SELECT
+          c.id_curso,
+          c.titulo AS curso_titulo,
+          COUNT(DISTINCT CASE WHEN i.estado_progreso = 'Finalizado' THEN i.id_estudiante END) AS total_completados,
+          COUNT(DISTINCT cert.id_certificado) AS total_certificaciones
+      FROM
+          curso c
+      LEFT JOIN
+          inscripcion i ON c.id_curso = i.id_curso
+      LEFT JOIN
+          certificado cert ON c.id_curso = cert.id_curso
+      GROUP BY
+          c.id_curso, c.titulo
+      ORDER BY
+          total_completados DESC, total_certificaciones DESC;
+    `;
+    const reporte = await this.dataSource.query(query);
+    return reporte;
+  }
+
+  async getReporteEstudiantesActivos() {
+    const query = `
+      SELECT
+          u.id_usuario,
+          CONCAT(u.nombre, ' ', u.apellido) AS estudiante_nombre_completo,
+          u.avatar_url,
+          COUNT(pl.id_leccion) AS lecciones_completadas
+      FROM progreso_leccion pl
+      JOIN usuario u ON pl.id_usuario = u.id_usuario
+      WHERE pl.completado = TRUE
+      GROUP BY u.id_usuario
+      ORDER BY lecciones_completadas DESC;
+    `;
+    return this.dataSource.query(query);
+  }
+
+  async getReporteCursosPorDocente() {
+    const query = `
+      SELECT
+          docente.id_usuario AS id_docente,
+          CONCAT(docente.nombre, ' ', docente.apellido) AS nombre_docente,
+          COUNT(c.id_curso) AS total_cursos,
+          JSON_ARRAYAGG(
+              JSON_OBJECT(
+                  'id_curso', c.id_curso,
+                  'titulo', c.titulo,
+                  'modalidad', c.modalidad
+              )
+          ) AS cursos
+      FROM usuario AS docente
+      JOIN usuario_rol ur ON docente.id_usuario = ur.id_usuario
+      JOIN rol r ON ur.id_rol = r.id_rol
+      LEFT JOIN curso c ON docente.id_usuario = c.id_docente
+      WHERE r.nombre = 'Docente'
+      GROUP BY docente.id_usuario
+      ORDER BY nombre_docente;
+    `;
+    return this.dataSource.query(query);
+  }
+
+  async getReporteHorariosSesiones() {
+    const query = `
+      SELECT
+          c.id_curso,
+          c.titulo AS curso_titulo,
+          (
+              SELECT GROUP_CONCAT(CONCAT(h.dia_semana, ' de ', TIME_FORMAT(h.hora_inicio, '%H:%i'), ' a ', TIME_FORMAT(h.hora_fin, '%H:%i')) SEPARATOR ' | ')
+              FROM horario h
+              WHERE h.id_curso = c.id_curso
+          ) AS horarios_curso,
+          JSON_ARRAYAGG(
+              JSON_OBJECT(
+                  'id_estudiante', u.id_usuario,
+                  'nombre_completo', CONCAT(u.nombre, ' ', u.apellido),
+                  'porcentaje_progreso', i.porcentaje_completado,
+                  'lecciones_completadas', (
+                      SELECT COUNT(pl.id_progreso_leccion)
+                      FROM progreso_leccion pl
+                      JOIN leccion l ON pl.id_leccion = l.id_leccion
+                      JOIN modulo m ON l.id_modulo = m.id_modulo
+                      WHERE pl.id_usuario = u.id_usuario AND m.id_curso = c.id_curso AND pl.completado = TRUE
+                  )
+              )
+          ) AS estudiantes
+      FROM
+          curso c
+      JOIN
+          inscripcion i ON c.id_curso = i.id_curso
+      JOIN
+          usuario u ON i.id_estudiante = u.id_usuario
+      GROUP BY
+          c.id_curso, c.titulo
+      ORDER BY c.titulo;
+    `;
+    return this.dataSource.query(query);
+  }
 }

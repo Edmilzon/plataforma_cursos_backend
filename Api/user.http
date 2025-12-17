@@ -40,3 +40,8 @@ GET {{baseUrl}}/1
 ### Obtener saldo de puntos de un usuario por ID
 # Reemplaza el 1 con el ID del usuario
 GET {{baseUrl}}/1/saldo-punto
+
+---
+### Reporte de actividad de nuevos usuarios (Admin)
+# @name getReporteNuevosUsuarios
+GET {{baseUrl}}/reportes/actividad-nuevos-usuarios

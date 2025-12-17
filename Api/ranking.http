@@ -14,3 +14,8 @@ GET {{baseUrl}}/courses/rating
 # @name getCoursePopularityRanking
 # Opcional: ?limit=5
 GET {{baseUrl}}/courses/popularity
+
+### 1. Ranking global de estudiantes destacados
+# @name getGlobalStudentRanking
+# Muestra el ranking de estudiantes basado en puntos, lecciones completadas y certificados.
+GET {{baseUrl}}/estudiantes-destacados

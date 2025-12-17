@@ -26,4 +26,10 @@ export class RankingController {
     ): Promise<CoursePopularityRankingDto[]> {
         return this.rankingService.getMostPopularCourses(limit);
     }
+    @Get('estudiantes-destacados')
+    getStudentRanking(
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    ) {
+        return this.rankingService.getStudentRanking(limit);
+    }
 }

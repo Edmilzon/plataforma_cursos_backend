@@ -86,3 +86,28 @@ GET {{baseUrl}}/docente/7
 ### Obtener reporte de estado de cursos por estudiante
 # @name getReporteEstadoEstudiantes
 GET {{baseUrl}}/reportes/estado-estudiantes
+
+---
+### Obtener reporte de promedio de notas por curso y estudiante
+# @name getReportePromedioNotas
+GET {{baseUrl}}/reportes/promedio-notas-estudiantes
+
+---
+### Obtener reporte de cursos más completados y certificaciones
+# @name getReporteCursosCompletados
+GET {{baseUrl}}/reportes/completados-certificaciones
+
+---
+### Obtener reporte de estudiantes con más lecciones completadas
+# @name getReporteEstudiantesActivos
+GET {{baseUrl}}/reportes/estudiantes-activos
+
+---
+### Obtener reporte de cursos dictados por docente
+# @name getReporteCursosPorDocente
+GET {{baseUrl}}/reportes/cursos-por-docente
+
+---
+### Obtener reporte de control de horarios y sesiones completadas
+# @name getReporteHorariosSesiones
+GET {{baseUrl}}/reportes/horarios-sesiones

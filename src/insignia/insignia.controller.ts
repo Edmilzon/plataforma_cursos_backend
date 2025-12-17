@@ -100,4 +100,11 @@ export class InsigniaController {
   ) {
     return this.insigniaService.asignarInsigniaUsuario(idUsuario, idInsignia);
   }
+
+  @Get('reportes/otorgadas')
+  @ApiOperation({ summary: 'Reporte de insignias otorgadas' })
+  @ApiOkResponse({ description: 'Reporte general y por estudiante de insignias otorgadas.' })
+  getReporteInsigniasOtorgadas() {
+    return this.insigniaService.getReporteInsigniasOtorgadas();
+  }
 }
