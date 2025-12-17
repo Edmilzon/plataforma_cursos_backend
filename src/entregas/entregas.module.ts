@@ -5,5 +5,6 @@ import { EntregasController } from './entregas.controller';
 @Module({
   controllers: [EntregasController],
   providers: [EntregasService],
+  exports: [EntregasService],
 })
 export class EntregasModule {}

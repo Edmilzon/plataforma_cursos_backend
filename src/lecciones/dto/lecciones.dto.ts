@@ -34,6 +34,7 @@ export class CreateTareaDto {
   @IsOptional() @IsString() url_contenido?: string;
   @IsDateString() fecha_entrega: string;
   @IsNumber() id_leccion: number;
+  @IsOptional() @IsBoolean() es_trabajo_final?: boolean;
 }
 
 export class UpdateTareaDto {

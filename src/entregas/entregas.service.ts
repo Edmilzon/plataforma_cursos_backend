@@ -157,26 +157,16 @@ export class EntregasService {
   }
 
   async calificar(
-<<<<<<< HEAD
     id: number,
     calificarEntregaDto: CalificarEntregaDto,
   ): Promise<any> {
     const entrega = await this.findOne(id); // Verifica que la entrega exista y la obtiene
     const { calificacion } = calificarEntregaDto;
-=======
-  id: number,
-  calificarEntregaDto: CalificarEntregaDto,
-): Promise<any> {
-  const entrega = await this.findOne(id);
-  const { calificacion } = calificarEntregaDto;
-  const MARCA_FINAL = '<!--TRABAJO_FINAL-->'; // MARCA REAL
->>>>>>> origin/archivos-agregados-a-backend
 
   // Actualizar calificación
   const query = "UPDATE entrega_actividad SET calificacion = ?, estado = 'Calificado' WHERE id_entrega = ?";
   await this.dataSource.query(query, [calificacion, id]);
 
-<<<<<<< HEAD
     // Devuelve el objeto que ya teníamos, pero con la calificación y estado actualizados.
     // Así evitamos una segunda consulta a la base de datos.
     return {
@@ -260,84 +250,51 @@ export class EntregasService {
     `;
 
     return this.dataSource.query(query, [id_curso, id_usuario]);
-=======
-  let idCurso = null;
-  let esTrabajoFinal = false;
-
-  if (entrega.id_tarea) {
-    const tarea = (await this.dataSource.query('SELECT * FROM tarea WHERE id_tarea = ?', [entrega.id_tarea]))[0];
-    if (tarea?.descripcion?.includes(MARCA_FINAL)) {
-      esTrabajoFinal = true;
-      // Buscar ID Curso desde Tarea
-      const info = await this.dataSource.query(
-        `SELECT m.id_curso FROM tarea t 
-         JOIN leccion l ON t.id_leccion = l.id_leccion 
-         JOIN modulo m ON l.id_modulo = m.id_modulo 
-         WHERE t.id_tarea = ?`, 
-        [entrega.id_tarea]
-      );
-      idCurso = info[0]?.id_curso;
-    }
-  } else if (entrega.id_evaluacion) {
-    const evaluacion = (await this.dataSource.query('SELECT * FROM evaluacion WHERE id_evaluacion = ?', [entrega.id_evaluacion]))[0];
-    if (evaluacion?.descripcion?.includes(MARCA_FINAL)) {
-      esTrabajoFinal = true;
-      // Buscar ID Curso desde Evaluación
-      const info = await this.dataSource.query(
-        `SELECT m.id_curso FROM evaluacion e 
-         JOIN leccion l ON e.id_leccion = l.id_leccion 
-         JOIN modulo m ON l.id_modulo = m.id_modulo 
-         WHERE e.id_evaluacion = ?`, 
-        [entrega.id_evaluacion]
-      );
-      idCurso = info[0]?.id_curso;
-    }
->>>>>>> origin/archivos-agregados-a-backend
   }
 
   
-  if (esTrabajoFinal && idCurso) {
-    const idUsuario = entrega.id_usuario;
+//   if (esTrabajoFinal && idCurso) {
+//     const idUsuario = entrega.id_usuario;
     
-    // Verificar progreso 100%
-    const totalLecciones = await this.dataSource.query(
-      `SELECT COUNT(*) as total FROM leccion l 
-       JOIN modulo m ON l.id_modulo = m.id_modulo 
-       WHERE m.id_curso = ?`, 
-      [idCurso]
-    );
-    const completadas = await this.dataSource.query(
-      `SELECT COUNT(DISTINCT pl.id_leccion) as completadas FROM progreso_leccion pl
-       JOIN leccion l ON pl.id_leccion = l.id_leccion 
-       JOIN modulo m ON l.id_modulo = m.id_modulo
-       WHERE pl.id_usuario = ? AND m.id_curso = ? AND pl.completado = 1`, 
-      [idUsuario, idCurso]
-    );
+//     // Verificar progreso 100%
+//     const totalLecciones = await this.dataSource.query(
+//       `SELECT COUNT(*) as total FROM leccion l 
+//        JOIN modulo m ON l.id_modulo = m.id_modulo 
+//        WHERE m.id_curso = ?`, 
+//       [idCurso]
+//     );
+//     const completadas = await this.dataSource.query(
+//       `SELECT COUNT(DISTINCT pl.id_leccion) as completadas FROM progreso_leccion pl
+//        JOIN leccion l ON pl.id_leccion = l.id_leccion 
+//        JOIN modulo m ON l.id_modulo = m.id_modulo
+//        WHERE pl.id_usuario = ? AND m.id_curso = ? AND pl.completado = 1`, 
+//       [idUsuario, idCurso]
+//     );
 
-    // Validar (Nota mínima 60 y 100% progreso)
-    const total = parseInt(totalLecciones[0].total);
-    const avance = parseInt(completadas[0].completadas);
+//     // Validar (Nota mínima 60 y 100% progreso)
+//     const total = parseInt(totalLecciones[0].total);
+//     const avance = parseInt(completadas[0].completadas);
     
-    if (total === avance && calificacion >= 60) {
-      const certExistente = await this.dataSource.query(
-        'SELECT id_certificado FROM certificado WHERE id_usuario = ? AND id_curso = ?', 
-        [idUsuario, idCurso]
-      );
+//     if (total === avance && calificacion >= 60) {
+//       const certExistente = await this.dataSource.query(
+//         'SELECT id_certificado FROM certificado WHERE id_usuario = ? AND id_curso = ?', 
+//         [idUsuario, idCurso]
+//       );
 
-      if (certExistente.length === 0) {
-        const urlCertificado = `/certificados/ver?curso=${idCurso}&usuario=${idUsuario}`;
-        await this.dataSource.query(
-          `INSERT INTO certificado (fecha_emision, url_certificado, id_usuario, id_curso) 
-           VALUES (NOW(), ?, ?, ?)`,
-          [urlCertificado, idUsuario, idCurso]
-        );
-      }
-    }
-  }
+//       if (certExistente.length === 0) {
+//         const urlCertificado = `/certificados/ver?curso=${idCurso}&usuario=${idUsuario}`;
+//         await this.dataSource.query(
+//           `INSERT INTO certificado (fecha_emision, url_certificado, id_usuario, id_curso) 
+//            VALUES (NOW(), ?, ?, ?)`,
+//           [urlCertificado, idUsuario, idCurso]
+//         );
+//       }
+//     }
+//   }
 
   
-  return await this.findOne(id);
-}
+//   return await this.findOne(id);
+// }
 
   async getDeliveriesByTask(idTarea: number) {
   const query = `

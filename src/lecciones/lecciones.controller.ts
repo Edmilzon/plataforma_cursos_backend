@@ -25,7 +25,7 @@ import {
 export class LeccionesController {
   constructor(
     private readonly leccionesService: LeccionesService,
-    private readonly entregasService: EntregasService // FALTA ESTO
+    private readonly entregasService: EntregasService,
   ) {}
 
   @Get(':id')

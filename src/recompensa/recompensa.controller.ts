@@ -31,7 +31,6 @@ export class RecompensaController {
     return this.recompensaService.findAll();
   }
 
-<<<<<<< HEAD
   @Get('disponibles')
   async findAllActive() {
     // Endpoint para usuarios
@@ -41,11 +40,6 @@ export class RecompensaController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.recompensaService.findOne(id);
-=======
-  @Get('usuario/:id')
-  async findRedeemedByUser(@Param('id', ParseIntPipe) id: number) {
-    return this.recompensaService.findRedeemedByUser(id);
->>>>>>> origin/ajustes-pago
   }
 
   @Post(':id/canjear')

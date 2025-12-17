@@ -39,7 +39,6 @@ export class EntregasController {
     return this.entregasService.calificar(id, calificarEntregaDto);
   }
 
-<<<<<<< HEAD
   @Get('curso/:id_curso')
   findAllByCurso(
     @Param('id_curso', ParseIntPipe) id_curso: number,
@@ -62,15 +61,12 @@ export class EntregasController {
       id_curso,
     );
   }
-=======
+
   @Get('/tarea/:idTarea')
   async getDeliveriesByTask(@Param('idTarea') idTarea: string) {
   return this.entregasService.getDeliveriesByTask(Number(idTarea));
   }
 
-<<<<<<< HEAD
->>>>>>> origin/ajustes-pago
-=======
   @Get('certificado/validar')
   async validarCertificado(
     @Query('usuario') idUsuario: number,
@@ -81,6 +77,4 @@ export class EntregasController {
     // Si necesitas convertirlos estrictamente, usa: @Query('usuario', ParseIntPipe)
     return this.entregasService.obtenerCertificado(idUsuario, idCurso);
   }
-
->>>>>>> origin/archivos-agregados-a-backend
 }
