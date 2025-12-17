@@ -77,4 +77,9 @@ export class EntregasController {
     // Si necesitas convertirlos estrictamente, usa: @Query('usuario', ParseIntPipe)
     return this.entregasService.obtenerCertificado(idUsuario, idCurso);
   }
+
+  @Get('reportes/notas-evaluaciones')
+  async getReporteNotasEvaluaciones() {
+    return this.entregasService.getReporteNotasEvaluaciones();
+  }
 }

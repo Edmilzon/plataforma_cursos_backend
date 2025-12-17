@@ -303,4 +303,23 @@ export class CursosService {
     const result = await this.dataSource.query(query, [idCurso]);
     return result;
   }
+
+  async getReporteEstadoEstudiantes() {
+    const query = `
+      SELECT 
+        c.id_curso,
+        c.titulo AS curso_titulo,
+        u.id_usuario AS id_estudiante,
+        CONCAT(u.nombre, ' ', u.apellido) AS estudiante_nombre_completo,
+        i.estado_progreso,
+        i.porcentaje_completado,
+        i.fecha_inscripcion
+      FROM inscripcion i
+      JOIN usuario u ON i.id_estudiante = u.id_usuario
+      JOIN curso c ON i.id_curso = c.id_curso
+      ORDER BY c.titulo, i.fecha_inscripcion;
+    `;
+    const reporte = await this.dataSource.query(query);
+    return reporte;
+  }
 }

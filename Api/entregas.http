@@ -53,3 +53,8 @@ GET {{baseUrl}}/4
 ### 7. Listar todas las entregas de un usuario en un curso específico
 # Reemplaza :id_usuario y :id_curso con los IDs correspondientes.
 GET {{baseUrl}}/usuario/2/curso/4
+
+---
+### 8. Obtener reporte de notas de evaluaciones
+# @name getReporteNotasEvaluaciones
+GET {{baseUrl}}/reportes/notas-evaluaciones

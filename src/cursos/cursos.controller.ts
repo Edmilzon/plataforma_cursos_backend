@@ -145,4 +145,9 @@ export class CursosController {
   async getTasksByCourse(@Param('idCurso') idCurso: string) {
   return this.cursosService.getTasksByCourse(Number(idCurso));
   }
+
+  @Get('reportes/estado-estudiantes')
+  async getReporteEstadoEstudiantes() {
+    return this.cursosService.getReporteEstadoEstudiantes();
+  }
 }

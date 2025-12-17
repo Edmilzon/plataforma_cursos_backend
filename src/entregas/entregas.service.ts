@@ -330,4 +330,29 @@ export class EntregasService {
     }
     return { tiene_certificado: false, url: null };
   }
+
+  async getReporteNotasEvaluaciones() {
+    const query = `
+      SELECT
+          u.id_usuario,
+          CONCAT(u.nombre, ' ', u.apellido) AS estudiante_nombre_completo,
+          c.id_curso,
+          c.titulo AS curso_titulo,
+          ev.id_evaluacion,
+          ev.titulo AS evaluacion_titulo,
+          ea.calificacion,
+          ea.fecha_entrega,
+          ea.estado
+      FROM entrega_actividad ea
+      JOIN usuario u ON ea.id_usuario = u.id_usuario
+      JOIN evaluacion ev ON ea.id_evaluacion = ev.id_evaluacion
+      JOIN leccion l ON ev.id_leccion = l.id_leccion
+      JOIN modulo m ON l.id_modulo = m.id_modulo
+      JOIN curso c ON m.id_curso = c.id_curso
+      WHERE ea.id_evaluacion IS NOT NULL AND ea.estado = 'Calificado'
+      ORDER BY c.titulo, estudiante_nombre_completo, ev.titulo;
+    `;
+    const reporte = await this.dataSource.query(query);
+    return reporte;
+  }
 }

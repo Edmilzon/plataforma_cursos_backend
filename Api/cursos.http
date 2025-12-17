@@ -81,3 +81,8 @@ GET {{baseUrl}}/1/horarios
 ### Obtener todos los cursos de un docente
 # @name getCursosByDocente
 GET {{baseUrl}}/docente/7
+
+---
+### Obtener reporte de estado de cursos por estudiante
+# @name getReporteEstadoEstudiantes
+GET {{baseUrl}}/reportes/estado-estudiantes
