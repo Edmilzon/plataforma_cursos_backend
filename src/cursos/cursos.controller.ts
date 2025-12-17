@@ -140,4 +140,9 @@ export class CursosController {
   async removeHorario(@Param('id', ParseIntPipe) id: number) {
     await this.cursosService.removeHorario(id);
   }
+
+  @Get(':idCurso/tareas')
+  async getTasksByCourse(@Param('idCurso') idCurso: string) {
+  return this.cursosService.getTasksByCourse(Number(idCurso));
+  }
 }

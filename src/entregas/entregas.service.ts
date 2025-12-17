@@ -250,4 +250,28 @@ export class EntregasService {
 
     return this.dataSource.query(query, [id_curso, id_usuario]);
   }
+
+  async getDeliveriesByTask(idTarea: number) {
+  const query = `
+    SELECT 
+      e.id_entrega,
+      e.url_archivo,
+      e.fecha_entrega,
+      e.calificacion,
+      u.nombre AS nombre_estudiante,
+      u.apellido AS apellido_estudiante
+    FROM entrega_actividad e
+    JOIN usuario u ON u.id_usuario = e.id_usuario
+    WHERE e.id_tarea = ?
+  `;
+
+  const result = await this.dataSource.query(query, [idTarea]);
+
+  // Combinar nombres en un solo campo
+  return result.map(r => ({
+    ...r,
+    nombre_estudiante: `${r.nombre_estudiante} ${r.apellido_estudiante}`,
+  }));
+  }
+
 }

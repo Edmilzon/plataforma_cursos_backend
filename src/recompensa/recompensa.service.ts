@@ -18,6 +18,7 @@ export class RecompensaService {
     private readonly dataSource: DataSource,
   ) {}
 
+<<<<<<< HEAD
   async create(createRecompensaDto: CreateRecompensaDto) {
     const {
       nombre,
@@ -46,6 +47,17 @@ export class RecompensaService {
     } catch (error) {
       throw new BadRequestException(`Error al crear la recompensa: ${error.message}`);
     }
+=======
+  async findRedeemedByUser(userId: number) {
+    const query = `
+      SELECT r.*, cr.fecha_canje, cr.id_canje_recompensa
+      FROM canje_recompensa cr
+      JOIN recompensa r ON cr.id_recompensa = r.id_recompensa
+      WHERE cr.id_usuario = ?
+      ORDER BY cr.fecha_canje DESC
+    `;
+    return this.dataSource.query(query, [userId]);
+>>>>>>> origin/ajustes-pago
   }
 
   async findAll() {
